@@ -2,13 +2,13 @@ package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class UserRepositoryInMemory implements UserRepository {
-    private HashMap<Long, User> allUsers = new HashMap<>();
+    private final HashMap<Long, User> allUsers = new HashMap<>();
 
     @Override
     public User addUser(User user) {
@@ -23,22 +23,22 @@ public class UserRepositoryInMemory implements UserRepository {
     }
 
     @Override
-    public User getUser(String userId) {
+    public User getUser(Long userId) {
         return allUsers.get(userId);
     }
 
     @Override
-    public void deleteUser(String userId) {
+    public void deleteUser(Long userId) {
         allUsers.remove(userId);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return allUsers.values().stream().collect(Collectors.toList());
+        return new ArrayList<>(allUsers.values());
     }
 
     static class IdUserGenerator {
-        private static long id;
+        private static long id = 0;
 
         private static long generateId() {
             return ++id;

@@ -2,16 +2,18 @@ package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import javax.json.JsonMergePatch;
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
-    User addUser(User user);
+    UserDto addUser(UserDto user);
 
-    User updateUser(String userId, User user) throws JsonProcessingException;
+    UserDto updateUser(Long userId, Map<Object, Object> fields) throws JsonProcessingException;
 
-    User getUser(String userId);
+    UserDto getUser(Long userId);
 
-    void deleteUser(String userId);
+    void deleteUser(Long userId);
 
-    List<User> getAllUsers();
+    List<UserDto> getAllUsers();
 }

@@ -7,11 +7,14 @@ import javax.validation.constraints.Pattern;
 
 @Data
 public class UserDto {
-    private long id;
+    private Long id;
 
     private String name;
 
     @NotBlank
     @Pattern(regexp = "^(.+)@(\\S+)$")
     private String email;
+
+    public UserDto() {
+    }
 }

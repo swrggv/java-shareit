@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.json.JsonMergePatch;
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 /**
  * // TODO .
@@ -22,22 +25,27 @@ public class UserController {
     }
 
     @PostMapping
-    public User addUser(@Valid @RequestBody User user) {
+    public UserDto addUser(@Valid @RequestBody UserDto user) {
         return userService.addUser(user);
     }
 
-    @PatchMapping("/{userId}")
-    public User updateUser(@PathVariable String userId, @Valid @RequestBody User user) throws JsonProcessingException {
-        return userService.updateUser(userId, user);
+    @PatchMapping(path = "/{userId}")
+    public UserDto updateUser(@PathVariable Long userId, @Valid @RequestBody Map<Object, Object> fields) throws JsonProcessingException {
+        return userService.updateUser(userId, fields);
     }
 
     @GetMapping("/{userId}")
-    public User getUser(@PathVariable String userId) {
+    public UserDto getUser(@PathVariable Long userId) {
         return userService.getUser(userId);
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable String userId) {
+    public void deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
+    }
+
+    @GetMapping
+    public List<UserDto> getAllUsers() {
+        return userService.getAllUsers();
     }
 }
