@@ -1,18 +1,12 @@
 package ru.practicum.shareit.user;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
-/**
- * // TODO .
- */
 @Data
-@AllArgsConstructor
-public class User {
-
+public class UserDto {
     private long id;
 
     private String name;
@@ -20,7 +14,4 @@ public class User {
     @NotBlank
     @Pattern(regexp = "^(.+)@(\\S+)$")
     private String email;
-
-    public User() {
-    }
 }
