@@ -8,10 +8,24 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class MyExceptionHandler {
 
-    @ExceptionHandler({EntityAlreadyExist.class, ValidationException.class})
+    @ExceptionHandler({EntityAlreadyExistException.class, ValidationException.class})
     public ResponseEntity<String> handlerAlreadyExist(RuntimeException ex) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleNotFound(ModelNotFoundExeption ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleNoRoot(NoRootException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
                 .body(ex.getMessage());
     }
 }

@@ -1,10 +1,10 @@
 package ru.practicum.shareit.user;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
-import ru.practicum.shareit.exception.EntityAlreadyExist;
+import ru.practicum.shareit.exception.EntityAlreadyExistException;
 import ru.practicum.shareit.exception.ValidationException;
 
 import java.lang.reflect.Field;
@@ -13,16 +13,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final ObjectMapper mapper;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, ObjectMapper mapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-        this.mapper = mapper;
     }
 
     @Override
@@ -31,6 +30,7 @@ public class UserServiceImpl implements UserService {
             User user = userMapper.toUser(userDto);
             return userMapper.toUserDto(userRepository.addUser(user));
         } else {
+            log.error("User with email {} already exist", userDto.getEmail() );
             throw new ValidationException("Validation exception");
         }
     }
@@ -44,15 +44,13 @@ public class UserServiceImpl implements UserService {
             ReflectionUtils.setField(field, user, v);
         });
         UserDto userDto = userMapper.toUserDto(user);
-        userRepository.updateUser(user);
-        return userDto;
-
-        /*if(isValid(userDto)) {
+        if(isValidPatch(userDto)) {
             userRepository.updateUser(user);
             return userDto;
         } else {
-            throw new EntityAlreadyExist("User with that email already exist");
-        }*/
+            log.error("User with email {} already exist", userDto.getEmail());
+            throw new EntityAlreadyExistException("User with that email already exist");
+        }
     }
 
     @Override
@@ -74,20 +72,13 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean isValid(UserDto user) {
-        if (getAllUsers().stream().anyMatch(x -> x.getEmail().equals(user.getEmail()))) {
-            throw new ValidationException("Incorrect email. User with that email already exist");
-        }
-        return true;
+        return getAllUsers().stream().noneMatch(x -> x.getEmail().equals(user.getEmail()));
     }
 
-    /*private boolean isValidPatch(UserDto userDto) {
+    private boolean isValidPatch(UserDto userDto) {
         long number = getAllUsers().stream().filter(x -> x.getEmail().equals(userDto.getEmail()))
-                .filter(x -> !x.getId().equals(userDto.getId()))
+                .filter(x -> x.getId() != (userDto.getId()))
                 .count();
-        if(number >= 1) {
-            return false;
-        } else {
-            return true;
-        }
-    }*/
+        return number < 1;
+    }
 }

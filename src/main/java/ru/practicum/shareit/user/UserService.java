@@ -2,7 +2,6 @@ package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import javax.json.JsonMergePatch;
 import java.util.List;
 import java.util.Map;
 

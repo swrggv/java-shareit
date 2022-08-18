@@ -1,14 +1,14 @@
 package ru.practicum.shareit.item.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.practicum.shareit.requests.ItemRequest;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
-/**
- * // TODO .
- */
 @Data
+@AllArgsConstructor
 public class Item {
     private long id;
 
@@ -18,9 +18,14 @@ public class Item {
     @NotEmpty
     private String description;
 
-    private boolean available;
+    @NotNull
+    private Boolean available;
 
-    private String owner;
+    //поменять на long?
+    private long owner;
 
     private ItemRequest request;
+
+    public Item() {
+    }
 }
