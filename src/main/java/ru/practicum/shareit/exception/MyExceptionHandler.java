@@ -16,7 +16,7 @@ public class MyExceptionHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleNotFound(ModelNotFoundExсeption ex) {
+    public ResponseEntity<String> handleNotFound(ModelNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ex.getMessage());

@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
-import ru.practicum.shareit.exception.ModelNotFoundExсeption;
+import ru.practicum.shareit.exception.ModelNotFoundException;
 import ru.practicum.shareit.exception.NoRootException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
@@ -40,7 +40,7 @@ public class ItemServiceImpl implements ItemService {
             return ItemMapper.toItemDto(item);
         } else {
             log.error("User not found {}", userId);
-            throw new ModelNotFoundExсeption(String.format("User %s not found", userId));
+            throw new ModelNotFoundException(String.format("User %s not found", userId));
         }
 
     }
