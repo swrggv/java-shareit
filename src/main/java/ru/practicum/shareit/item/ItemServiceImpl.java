@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
-import ru.practicum.shareit.exception.ModelNotFoundExeption;
+import ru.practicum.shareit.exception.ModelNotFoundExсeption;
 import ru.practicum.shareit.exception.NoRootException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ItemServiceImpl implements ItemService{
+public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
@@ -32,7 +32,7 @@ public class ItemServiceImpl implements ItemService{
 
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
-        if(isUserExist(userId)) {
+        if (isUserExist(userId)) {
             Item item = ItemMapper.toItem(itemDto);
             item.setOwner(userId);
             item.setId(IdItemGeneration.createId());
@@ -40,14 +40,14 @@ public class ItemServiceImpl implements ItemService{
             return ItemMapper.toItemDto(item);
         } else {
             log.error("User not found {}", userId);
-            throw new ModelNotFoundExeption(String.format("User %s not found", userId));
+            throw new ModelNotFoundExсeption(String.format("User %s not found", userId));
         }
 
     }
 
     @Override
     public ItemDto updateItem(Map<Object, Object> fields, long itemId, long userId) {
-        if(isOwner(itemId, userId)) {
+        if (isOwner(itemId, userId)) {
             Item item = getItemById(itemId);
             fields.forEach((k, v) -> {
                 Field field = ReflectionUtils.findField(Item.class, String.valueOf(k));
@@ -80,7 +80,7 @@ public class ItemServiceImpl implements ItemService{
 
     @Override
     public List<ItemDto> getItemsAvailableToRent(String text) {
-        if(text.isBlank()) {
+        if (text.isBlank()) {
             return new ArrayList<>();
         }
         List<Item> items = itemRepository.getAllItemsAvailableToRent(text);

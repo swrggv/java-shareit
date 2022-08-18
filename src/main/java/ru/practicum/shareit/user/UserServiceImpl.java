@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
             User user = userMapper.toUser(userDto);
             return userMapper.toUserDto(userRepository.addUser(user));
         } else {
-            log.error("User with email {} already exist", userDto.getEmail() );
+            log.error("User with email {} already exist", userDto.getEmail());
             throw new ValidationException("Validation exception");
         }
     }
@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
             ReflectionUtils.setField(field, user, v);
         });
         UserDto userDto = userMapper.toUserDto(user);
-        if(isValidPatch(userDto)) {
+        if (isValidPatch(userDto)) {
             userRepository.updateUser(user);
             return userDto;
         } else {
