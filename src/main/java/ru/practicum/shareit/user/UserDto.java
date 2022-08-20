@@ -7,12 +7,14 @@ import javax.validation.constraints.Pattern;
 
 @Data
 public class UserDto {
+
     private long id;
 
+    @NotBlank(groups = UserCreate.class)
     private String name;
 
-    @NotBlank
-    @Pattern(regexp = "^(.+)@(\\S+)$")
+    @NotBlank(groups = UserCreate.class)
+    @Pattern(regexp = "^(.+)@(\\S+)$", groups = UserCreate.class)
     private String email;
 
     public UserDto() {

@@ -2,12 +2,12 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.ItemCreate;
 import ru.practicum.shareit.item.dto.ItemDto;
 
-import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/items")
@@ -21,17 +21,18 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto addItem(@Valid @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") long userId) {
+    public ItemDto addItem(@Validated(ItemCreate.class) @RequestBody ItemDto itemDto,
+                           @RequestHeader("X-Sharer-User-Id") long userId) {
         ItemDto result = itemService.addItem(itemDto, userId);
         log.info("Item was added {}", itemDto);
         return result;
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestBody Map<Object, Object> fields,
+    public ItemDto updateItem(@RequestBody ItemDto patchItem,
                               @PathVariable Long itemId,
                               @RequestHeader("X-Sharer-User-Id") long userId) {
-        ItemDto result = itemService.updateItem(fields, itemId, userId);
+        ItemDto result = itemService.updateItem(patchItem, itemId, userId);
         log.info("Item {} was changed", itemId);
         return result;
     }

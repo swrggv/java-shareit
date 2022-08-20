@@ -1,11 +1,12 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserMapper {
 
-    public UserDto toUserDto(User user) {
+    public static UserDto toUserDto(User user) {
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());
         userDto.setEmail(user.getEmail());
@@ -13,7 +14,7 @@ public class UserMapper {
         return userDto;
     }
 
-    public User toUser(UserDto userDto) {
+    public static User toUser(UserDto userDto) {
         User user = new User();
         user.setId(userDto.getId());
         user.setEmail(userDto.getEmail());
