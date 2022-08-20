@@ -2,23 +2,24 @@ package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Repository
 public class UserRepositoryInMemory implements UserRepository {
-    private final HashMap<Long, User> allUsers = new HashMap<>();
+    private final Map<Long, User> allUsers = new HashMap<>();
+    private final Set<String> emailUniqSet = new HashSet<>();
 
     @Override
     public User addUser(User user) {
-        user.setId(IdUserGenerator.generateId());
         allUsers.put(user.getId(), user);
+        emailUniqSet.add(user.getEmail());
         return user;
     }
 
     @Override
-    public User updateUser(User user) {
+    public User updateUser(User user, Long userId) {
+        emailUniqSet.remove(getUser(userId).getEmail());
+        emailUniqSet.add(user.getEmail());
         return allUsers.put(user.getId(), user);
     }
 
@@ -29,6 +30,7 @@ public class UserRepositoryInMemory implements UserRepository {
 
     @Override
     public void deleteUser(Long userId) {
+        emailUniqSet.remove(getUser(userId).getEmail());
         allUsers.remove(userId);
     }
 
@@ -37,11 +39,8 @@ public class UserRepositoryInMemory implements UserRepository {
         return new ArrayList<>(allUsers.values());
     }
 
-    static class IdUserGenerator {
-        private static long id = 0;
-
-        private static long generateId() {
-            return ++id;
-        }
+    @Override
+    public boolean checkEmail(String userEmail) {
+        return !emailUniqSet.contains(userEmail);
     }
 }

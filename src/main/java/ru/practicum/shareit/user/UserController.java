@@ -3,11 +3,10 @@ package ru.practicum.shareit.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -21,16 +20,17 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto addUser(@Valid @RequestBody UserDto user) {
+    public UserDto addUser(@Validated(UserCreate.class) @RequestBody UserDto user) {
         UserDto result = userService.addUser(user);
         log.info("User {} was added", result);
         return result;
     }
 
     @PatchMapping(path = "/{userId}")
-    public UserDto updateUser(@PathVariable Long userId, @Valid @RequestBody Map<Object, Object> fields)
+    public UserDto updateUser(@PathVariable Long userId,
+                              @Validated(UserUpdate.class) @RequestBody UserDto patchUser)
             throws JsonProcessingException {
-        UserDto result = userService.updateUser(userId, fields);
+        UserDto result = userService.updateUser(userId, patchUser);
         log.info("User {} was changed", userId);
         return result;
     }

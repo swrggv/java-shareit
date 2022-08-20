@@ -3,60 +3,65 @@ package ru.practicum.shareit.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
+import ru.practicum.shareit.IdGenerator;
 import ru.practicum.shareit.exception.EntityAlreadyExistException;
 import ru.practicum.shareit.exception.ValidationException;
 
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final IdGenerator idGenerator;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, IdGenerator idGenerator) {
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
+        this.idGenerator = idGenerator;
     }
 
     @Override
     public UserDto addUser(UserDto userDto) {
         if (isValid(userDto)) {
-            User user = userMapper.toUser(userDto);
-            return userMapper.toUserDto(userRepository.addUser(user));
+            User user = UserMapper.toUser(userDto);
+            user.setId(idGenerator.getId());
+            return UserMapper.toUserDto(userRepository.addUser(user));
         } else {
             log.error("User with email {} already exist", userDto.getEmail());
-            throw new ValidationException("Validation exception");
+            throw new ValidationException("Validation exception. Wrong email");
         }
     }
 
     @Override
-    public UserDto updateUser(Long userId, Map<Object, Object> fields) {
-        User user = userMapper.toUser(getUser(userId));
-        fields.forEach((k, v) -> {
-            Field field = ReflectionUtils.findField(User.class, String.valueOf(k));
-            field.setAccessible(true);
-            ReflectionUtils.setField(field, user, v);
-        });
-        UserDto userDto = userMapper.toUserDto(user);
+    public UserDto updateUser(Long userId, UserDto patchUSer) {
+        User oldUser = UserMapper.toUser(getUser(userId));
+        User result = patch(oldUser, UserMapper.toUser(patchUSer));
+        UserDto userDto = UserMapper.toUserDto(result);
         if (isValidPatch(userDto)) {
-            userRepository.updateUser(user);
+            userRepository.updateUser(result, userId);
             return userDto;
         } else {
             log.error("User with email {} already exist", userDto.getEmail());
-            throw new EntityAlreadyExistException("User with that email already exist");
+            throw new EntityAlreadyExistException("User with email already exist");
         }
+    }
+
+    private User patch(User user, User patchUser) {
+        if (patchUser.getName() != null) {
+            user.setName(patchUser.getName());
+        }
+        if (patchUser.getEmail() != null) {
+            user.setEmail(patchUser.getEmail());
+        }
+        return user;
     }
 
     @Override
     public UserDto getUser(Long userId) {
         User user = userRepository.getUser(userId);
-        return userMapper.toUserDto(user);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
@@ -67,12 +72,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAllUsers() {
         return userRepository.getAllUsers().stream()
-                .map(userMapper::toUserDto)
+                .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
     private boolean isValid(UserDto user) {
-        return getAllUsers().stream().noneMatch(x -> x.getEmail().equals(user.getEmail()));
+        return userRepository.checkEmail(user.getEmail());
     }
 
     private boolean isValidPatch(UserDto userDto) {

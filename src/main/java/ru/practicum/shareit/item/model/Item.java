@@ -22,9 +22,9 @@ public class Item {
     private Boolean available;
 
     //поменять на long?
-    private long owner;
+    private Long owner;
 
-    private ItemRequest request;
+    private Long request;
 
     public Item() {
     }

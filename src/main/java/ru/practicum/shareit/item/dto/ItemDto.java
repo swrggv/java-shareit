@@ -2,9 +2,8 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.shareit.requests.ItemRequest;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -13,16 +12,16 @@ public class ItemDto {
 
     private long id;
 
-    @NotEmpty
+    @NotBlank(groups = ItemCreate.class)
     private String name;
 
-    @NotEmpty
+    @NotBlank(groups = ItemCreate.class)
     private String description;
 
-    @NotNull
+    @NotNull(groups = ItemCreate.class)
     private Boolean available;
 
-    private ItemRequest request;
+    private Long requestId;
 
     public ItemDto() {
     }

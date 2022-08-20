@@ -3,7 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
+import ru.practicum.shareit.IdGenerator;
 import ru.practicum.shareit.exception.ModelNotFoundException;
 import ru.practicum.shareit.exception.NoRootException;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -12,10 +12,8 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,19 +21,20 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final IdGenerator idGenerator;
 
     @Autowired
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, IdGenerator idGenerator) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.idGenerator = idGenerator;
     }
 
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         if (isUserExist(userId)) {
-            Item item = ItemMapper.toItem(itemDto);
-            item.setOwner(userId);
-            item.setId(IdItemGeneration.createId());
+            Item item = ItemMapper.toItem(itemDto, userId, null);
+            item.setId(idGenerator.getId());
             itemRepository.addItem(item);
             return ItemMapper.toItemDto(item);
         } else {
@@ -46,20 +45,30 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto updateItem(Map<Object, Object> fields, long itemId, long userId) {
+    public ItemDto updateItem(ItemDto patchItem, long itemId, long userId) {
         if (isOwner(itemId, userId)) {
-            Item item = getItemById(itemId);
-            fields.forEach((k, v) -> {
-                Field field = ReflectionUtils.findField(Item.class, String.valueOf(k));
-                field.setAccessible(true);
-                ReflectionUtils.setField(field, item, v);
-            });
-            itemRepository.updateItem(item);
-            return ItemMapper.toItemDto(item);
+            Item oldItem = getItemById(itemId);
+            Item result = patch(oldItem, ItemMapper.toItem(patchItem, userId, null));
+            ItemDto itemDto = ItemMapper.toItemDto(result);
+            itemRepository.updateItem(result);
+            return itemDto;
         } else {
             log.error("Access is forbidden. User {} doesn't have access rights", userId);
             throw new NoRootException(String.format("Access is forbidden. User %s doesn't have access rights", userId));
         }
+    }
+
+    private Item patch(Item item, Item patchItem) {
+        if (patchItem.getName() != null) {
+            item.setName(patchItem.getName());
+        }
+        if (patchItem.getDescription() != null) {
+            item.setDescription(patchItem.getDescription());
+        }
+        if (patchItem.getAvailable() != null) {
+            item.setAvailable(patchItem.getAvailable());
+        }
+        return item;
     }
 
     private Item getItemById(long itemId) {
@@ -95,13 +104,5 @@ public class ItemServiceImpl implements ItemService {
 
     private boolean isOwner(long itemId, long userId) {
         return itemRepository.getItemById(itemId).getOwner() == userId;
-    }
-
-    static class IdItemGeneration {
-        private static long id = 0;
-
-        public static long createId() {
-            return ++id;
-        }
     }
 }
