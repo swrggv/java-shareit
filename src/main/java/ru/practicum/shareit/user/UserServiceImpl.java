@@ -29,7 +29,6 @@ public class UserServiceImpl implements UserService {
             user.setId(idGenerator.getId());
             return UserMapper.toUserDto(userRepository.addUser(user));
         } else {
-            log.error("User with email {} already exist", userDto.getEmail());
             throw new ValidationException("Validation exception. Wrong email");
         }
     }
@@ -43,7 +42,6 @@ public class UserServiceImpl implements UserService {
             userRepository.updateUser(result, userId);
             return userDto;
         } else {
-            log.error("User with email {} already exist", userDto.getEmail());
             throw new EntityAlreadyExistException("User with email already exist");
         }
     }

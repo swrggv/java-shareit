@@ -13,8 +13,8 @@ public class ItemRepositoryInMemory implements ItemRepository {
 
     @Override
     public Item addItem(Item item) {
-        userItemIndex.computeIfAbsent(item.getOwner(), k -> new ArrayList<>());
-        userItemIndex.get(item.getOwner()).add(item);
+        userItemIndex.computeIfAbsent(item.getOwner().getId(), k -> new ArrayList<>());
+        userItemIndex.get(item.getOwner().getId()).add(item);
         items.put(item.getId(), item);
         return item;
     }
@@ -33,7 +33,7 @@ public class ItemRepositoryInMemory implements ItemRepository {
     @Override
     public List<Item> getAllItemsOfOwner(long userId) {
         return items.values().stream()
-                .filter(x -> x.getOwner() == userId)
+                .filter(x -> x.getOwner().getId() == userId)
                 .collect(Collectors.toList());
     }
 

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import lombok.Data;
+import ru.practicum.shareit.Create;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -10,11 +11,11 @@ public class UserDto {
 
     private long id;
 
-    @NotBlank(groups = UserCreate.class)
+    @NotBlank(groups = Create.class)
     private String name;
 
-    @NotBlank(groups = UserCreate.class)
-    @Pattern(regexp = "^(.+)@(\\S+)$", groups = UserCreate.class)
+    @NotBlank(groups = Create.class)
+    @Pattern(regexp = "^(.+)@(\\S+)$", groups = Create.class)
     private String email;
 
     public UserDto() {

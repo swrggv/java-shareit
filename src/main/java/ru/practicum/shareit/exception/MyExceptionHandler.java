@@ -38,7 +38,7 @@ public class MyExceptionHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleAllException(Exception ex) {
+    public ResponseEntity<String> handleAllException(Throwable ex) {
         log.error(ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -2,28 +2,24 @@ package ru.practicum.shareit.item.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import ru.practicum.shareit.requests.ItemRequest;
+import ru.practicum.shareit.user.User;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
 public class Item {
     private long id;
 
-    @NotEmpty
     private String name;
 
-    @NotEmpty
     private String description;
 
-    @NotNull
     private Boolean available;
 
-    //поменять на long?
-    private Long owner;
+    private User owner;
 
-    private Long request;
+    private ItemRequest request;
 
     public Item() {
     }

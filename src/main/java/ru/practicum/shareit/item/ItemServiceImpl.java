@@ -33,27 +33,26 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         if (isUserExist(userId)) {
-            Item item = ItemMapper.toItem(itemDto, userId, null);
+            User owner = userRepository.getUser(userId);
+            Item item = ItemMapper.toItem(itemDto, owner, null);
             item.setId(idGenerator.getId());
             itemRepository.addItem(item);
             return ItemMapper.toItemDto(item);
         } else {
-            log.error("User not found {}", userId);
             throw new ModelNotFoundException(String.format("User %s not found", userId));
         }
-
     }
 
     @Override
     public ItemDto updateItem(ItemDto patchItem, long itemId, long userId) {
         if (isOwner(itemId, userId)) {
             Item oldItem = getItemById(itemId);
-            Item result = patch(oldItem, ItemMapper.toItem(patchItem, userId, null));
+            User owner = userRepository.getUser(userId);
+            Item result = patch(oldItem, ItemMapper.toItem(patchItem, owner, null));
             ItemDto itemDto = ItemMapper.toItemDto(result);
             itemRepository.updateItem(result);
             return itemDto;
         } else {
-            log.error("Access is forbidden. User {} doesn't have access rights", userId);
             throw new NoRootException(String.format("Access is forbidden. User %s doesn't have access rights", userId));
         }
     }
@@ -103,6 +102,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private boolean isOwner(long itemId, long userId) {
-        return itemRepository.getItemById(itemId).getOwner() == userId;
+        return itemRepository.getItemById(itemId).getOwner().getId() == userId;
     }
 }
