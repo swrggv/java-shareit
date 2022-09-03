@@ -3,34 +3,32 @@ package ru.practicum.shareit.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.IdGenerator;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.EntityAlreadyExistException;
-import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.exception.ModelNotFoundException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final IdGenerator idGenerator;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, IdGenerator idGenerator) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.idGenerator = idGenerator;
     }
 
     @Override
     public UserDto addUser(UserDto userDto) {
-        if (isValid(userDto)) {
-            User user = UserMapper.toUser(userDto);
-            user.setId(idGenerator.getId());
-            return UserMapper.toUserDto(userRepository.addUser(user));
-        } else {
-            throw new ValidationException("Validation exception. Wrong email");
-        }
+        User saved = userRepository.save(UserMapper.toUser(userDto));
+        return UserMapper.toUserDto(saved);
     }
 
     @Override
@@ -39,7 +37,7 @@ public class UserServiceImpl implements UserService {
         User result = patch(oldUser, UserMapper.toUser(patchUSer));
         UserDto userDto = UserMapper.toUserDto(result);
         if (isValidPatch(userDto)) {
-            userRepository.updateUser(result, userId);
+            userRepository.save(result);
             return userDto;
         } else {
             throw new EntityAlreadyExistException("User with email already exist");
@@ -56,26 +54,28 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDto getUser(Long userId) {
-        User user = userRepository.getUser(userId);
-        return UserMapper.toUserDto(user);
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isPresent()) {
+            return UserMapper.toUserDto(user.get());
+        } else {
+            throw new ModelNotFoundException(String.format("User %d not found", userId));
+        }
     }
 
     @Override
     public void deleteUser(Long userId) {
-        userRepository.deleteUser(userId);
+        userRepository.deleteById(userId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserDto> getAllUsers() {
-        return userRepository.getAllUsers().stream()
+        return userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
-    }
-
-    private boolean isValid(UserDto user) {
-        return userRepository.checkEmail(user.getEmail());
     }
 
     private boolean isValidPatch(UserDto userDto) {
