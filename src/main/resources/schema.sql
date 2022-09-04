@@ -98,6 +98,6 @@ create table if not exists comments
     created timestamp without time zone,
     CONSTRAINT text_is_not_empty CHECK (text IS NOT NULL AND text <> ''),
     CONSTRAINT created_is_not_null CHECK (created IS NOT NULL),
-    CONSTRAINT item_id_not_null CHECK ( item_id IS NOT NULL),
+    CONSTRAINT item_id_not_null_comments CHECK ( item_id IS NOT NULL),
     CONSTRAINT author_id_not_null CHECK ( author_id IS NOT NULL)
 );
