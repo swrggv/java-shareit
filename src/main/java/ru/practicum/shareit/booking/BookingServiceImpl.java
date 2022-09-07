@@ -177,9 +177,9 @@ public class BookingServiceImpl implements BookingService {
             throw new ModelNotFoundException("Booker not found");
         } else if (item.get().getOwner().getId() == booker.get().getId()) {
             throw new ModelNotFoundException("User can not book his own item");
-        } else if (isBooked(start, end, item.get().getId())) {
+        } /*else if (isBooked(start, end, item.get().getId())) {
             throw new ValidationException("Dates is already booked");
-        } else {
+        }*/ else {
             return true;
         }
 

@@ -78,6 +78,7 @@ create table if not exists bookings
      CONSTRAINT end_date_not_null CHECK (end_date IS NOT NULL),
      CONSTRAINT item_id_not_null CHECK ( item_id IS NOT NULL),
      CONSTRAINT booker_id_not_null CHECK ( booker_id IS NOT NULL),
+     CONSTRAINT end_is_after_start CHECK (end_date > start_date),
      CONSTRAINT status_not_null CHECK (status IS NOT NULL)
  );
 

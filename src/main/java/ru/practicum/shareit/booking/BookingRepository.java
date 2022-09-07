@@ -42,8 +42,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("from Booking b where b.item.owner.id = :ownerId and b.status = :status")
     List<Booking> findBookingsByStatusForItemOwner(@Param("ownerId") long ownerId, @Param("status") Status status);
 
-    @Query(value = "select exists(select * from bookings b " +
+    /*@Query(value = "select exists(select * from bookings b " +
             "where (b.start_date, b.end_date) OVERLAPS (:start, :end) and b.item_id = :itemId)",
+            nativeQuery = true)*/
+    @Query(value = "select exists(select * from bookings as b where not " +
+            "(:start between b.start_date and b.end_date or " +
+            ":end between b.start_date and b.end_date) and " +
+            "b.item_id = :itemId)",
             nativeQuery = true)
     boolean isBooked(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("itemId") long itemId);
 
