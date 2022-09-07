@@ -162,6 +162,9 @@ public class BookingServiceImpl implements BookingService {
         return booking;
     }
 
+    /* если чекать пересечение else if (isBooked(start, end, item.get().getId())) {
+            throw new ValidationException("Dates is already booked");
+        }*/
     private boolean isValid(BookingDto bookingDto, Optional<Item> item, Optional<User> booker) {
         LocalDateTime start = bookingDto.getStart();
         LocalDateTime end = bookingDto.getEnd();
@@ -177,9 +180,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ModelNotFoundException("Booker not found");
         } else if (item.get().getOwner().getId() == booker.get().getId()) {
             throw new ModelNotFoundException("User can not book his own item");
-        } /*else if (isBooked(start, end, item.get().getId())) {
-            throw new ValidationException("Dates is already booked");
-        }*/ else {
+        } else {
             return true;
         }
 
