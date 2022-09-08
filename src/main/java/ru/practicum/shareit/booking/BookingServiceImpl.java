@@ -158,7 +158,7 @@ public class BookingServiceImpl implements BookingService {
     private boolean isValid(BookItemRequestDto bookItemRequestDto, Item item, User booker) {
         LocalDateTime start = bookItemRequestDto.getStart();
         LocalDateTime end = bookItemRequestDto.getEnd();
-        if (end.isBefore(start) & !start.isEqual(end)) {
+        if (end.isBefore(start) && !start.isEqual(end)) {
             throw new ValidationException("End date should not be before start date");
         } else if (!item.getAvailable()) {
             throw new ValidationException(String.format("Item %s is not available", item.getId()));
