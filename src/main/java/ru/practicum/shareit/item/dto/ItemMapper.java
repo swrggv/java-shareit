@@ -7,6 +7,9 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 
@@ -39,5 +42,11 @@ public class ItemMapper {
         itemDtoWithDate.setAvailable(item.getAvailable());
         itemDtoWithDate.setRequestId(item.getItemRequest() != null ? item.getItemRequest().getId() : null);
         return itemDtoWithDate;
+    }
+
+    public static List<ItemDtoWithDate> toListItemDtoWithDate(List<Item> items) {
+        return items.stream()
+                .map(ItemMapper::toItemDtoWithDate)
+                .collect(Collectors.toList());
     }
 }

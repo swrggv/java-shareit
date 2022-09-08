@@ -2,12 +2,14 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.shareit.booking.dto.BookingDtoForItemOwner;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class ItemDtoWithDate {
     private long id;
 
@@ -19,12 +21,17 @@ public class ItemDtoWithDate {
 
     private Long requestId;
 
-    private BookingDtoForItemOwner lastBooking;
+    private BookingDto lastBooking;
 
-    private BookingDtoForItemOwner nextBooking;
+    private BookingDto nextBooking;
 
     private List<CommentDto> comments;
 
-    public ItemDtoWithDate() {
+    @Data
+    public static class BookingDto {
+        private final Long id;
+        private final LocalDateTime start;
+        private final LocalDateTime end;
+        private final Long bookerId;
     }
 }

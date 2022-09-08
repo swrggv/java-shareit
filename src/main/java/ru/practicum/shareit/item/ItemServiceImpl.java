@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -31,69 +32,43 @@ public class ItemServiceImpl implements ItemService {
 
     private final CommentRepository commentRepository;
 
-    @Autowired
-    public ItemServiceImpl(ItemRepository itemRepository,
-                           UserRepository userRepository,
-                           BookingRepository bookingRepository,
-                           CommentRepository commentRepository) {
-        this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
-        this.bookingRepository = bookingRepository;
-        this.commentRepository = commentRepository;
-    }
-
+    @Transactional
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
-        Optional<User> optionalOwner = userRepository.findById(userId);
-        if (optionalOwner.isPresent()) {
-            User owner = optionalOwner.get();
-            Item result = itemRepository.save(ItemMapper.toItem(itemDto, owner, null));
-            return ItemMapper.toItemDto(result);
-        } else {
-            throw new ModelNotFoundException(String.format("User %s not found", userId));
-        }
+        User owner = fromOptionalToUser(userId);
+        Item result = itemRepository.save(ItemMapper.toItem(itemDto, owner, null));
+        return ItemMapper.toItemDto(result);
     }
 
+    @Transactional
     @Override
     public ItemDto updateItem(ItemDto patchItem, long itemId, long userId) {
         if (isOwner(itemId, userId)) {
-            Optional<User> user = userRepository.findById(userId);
-            Optional<Item> oldItem = itemRepository.findById(itemId);
-            Item updatedItem = patch(oldItem.get(), ItemMapper.toItem(patchItem, user.get(), null));
+            User user = fromOptionalToUser(userId);
+            Item oldItem = fromOptionalToItem(itemId);
+            Item updatedItem = patch(oldItem, ItemMapper.toItem(patchItem, user, null));
             return ItemMapper.toItemDto(itemRepository.save(updatedItem));
         } else {
             throw new NoRootException(String.format("Access is forbidden. User %s doesn't have access rights", userId));
         }
     }
 
-    @Transactional(readOnly = true)
     @Override
     public ItemDtoWithDate getItemEachUserById(long itemId, long ownerId) {
-        Optional<Item> item = itemRepository.findById(itemId);
-        ItemDtoWithDate result = ItemMapper
-                .toItemDtoWithDate(item.orElseThrow(() -> new ModelNotFoundException(String.format("Item %s not found",
-                        itemId))));
+        Item item = fromOptionalToItem(itemId);
+        ItemDtoWithDate result = ItemMapper.toItemDtoWithDate(item);
         addCommentsToItems(List.of(result));
-        /*List<CommentDto> comment = commentRepository.findByItem(item.get()).stream()
-                .map(CommentMapper::toCommentDto)
-                .collect(Collectors.toList());
-        result.setComments(comment);*/
-        if (item.get().getOwner().getId() != ownerId) {
+        if (item.getOwner().getId() != ownerId) {
             return result;
         } else {
             return addBookingDtoForItemOwner(result);
         }
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<ItemDtoWithDate> getAllItemsOfOwner(long userId) {
-        Optional<User> owner = userRepository.findById(userId);
-        List<ItemDtoWithDate> items = itemRepository.findByOwner(owner.orElseThrow(() ->
-                        new ModelNotFoundException(String.format("User %d not found", userId)))).stream()
-                .map(ItemMapper::toItemDtoWithDate)
-                .collect(Collectors.toList());
-        addCommentsToItems(items);
+        User owner = fromOptionalToUser(userId);
+        List<ItemDtoWithDate> items = ItemMapper.toListItemDtoWithDate(itemRepository.findByOwner(owner));
         for (ItemDtoWithDate item : items) {
             addBookingDtoForItemOwner(item);
         }
@@ -101,7 +76,6 @@ public class ItemServiceImpl implements ItemService {
         return items;
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<ItemDto> getItemsAvailableToRent(String text) {
         if (text.isBlank()) {
@@ -112,22 +86,16 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public CommentDto addCommentToItem(long itemId, long userId, CommentDto commentDto) {
-        Optional<Item> item = itemRepository.findById(itemId);
-        if (item.isEmpty()) {
-            throw new ModelNotFoundException("Item or User not found");
-        }
+        Item item = fromOptionalToItem(itemId);
         if (bookingRepository.isExists(itemId, userId, LocalDateTime.now())) {
-            Comment comment = new Comment();
-            Optional<User> author = userRepository.findById(userId);
-            comment.setItem(item.get());
-            comment.setAuthor(author.get());
-            comment.setText(commentDto.getText());
-            comment.setCreated(LocalDateTime.now());
+            User author = fromOptionalToUser(userId);
+            Comment comment = CommentMapper.toComment(commentDto, item, author);
             commentDto = CommentMapper.toCommentDto(commentRepository.save(comment));
         } else {
-            throw new ValidationException(String.format("User %s did not book item %s", userId, item.get().getId()));
+            throw new ValidationException(String.format("User %s did not book item %s", userId, item.getId()));
         }
         return commentDto;
     }
@@ -138,10 +106,10 @@ public class ItemServiceImpl implements ItemService {
         Booking nextBooking = bookingRepository.findBookingByItemWithDateAfter(itemDtoWithDate.getId(),
                 LocalDateTime.now());
         if (lastBooking != null) {
-            itemDtoWithDate.setLastBooking(BookingMapper.toBookingDtoForItemOwner(lastBooking));
+            itemDtoWithDate.setLastBooking(BookingMapper.toItemDtoWithDateToBookingDto(lastBooking));
         }
         if (nextBooking != null) {
-            itemDtoWithDate.setNextBooking(BookingMapper.toBookingDtoForItemOwner(nextBooking));
+            itemDtoWithDate.setNextBooking(BookingMapper.toItemDtoWithDateToBookingDto(nextBooking));
         }
         return itemDtoWithDate;
     }
@@ -150,10 +118,18 @@ public class ItemServiceImpl implements ItemService {
         List<Comment> comments;
         for (ItemDtoWithDate item : items) {
             comments = commentRepository.findByItemId(item.getId());
-            item.setComments(comments.stream()
-                    .map(CommentMapper::toCommentDto)
-                    .collect(Collectors.toList()));
+            item.setComments(CommentMapper.toListCommentsDto(comments));
         }
+    }
+
+    public Item fromOptionalToItem(long itemId) {
+        return itemRepository.findById(itemId)
+                .orElseThrow(() -> new ModelNotFoundException(String.format("Item %s not found", itemId)));
+    }
+
+    public User fromOptionalToUser(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ModelNotFoundException(String.format("User %s not found", userId)));
     }
 
     private Item patch(Item item, Item patchItem) {
@@ -170,8 +146,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private boolean isOwner(long itemId, long userId) {
-        return itemRepository.findById(itemId)
-                .orElseThrow(() -> new ModelNotFoundException(String.format("User %s not found", userId)))
-                .getOwner().getId() == userId;
+        return fromOptionalToItem(itemId).getOwner().getId() == userId;
     }
 }

@@ -3,52 +3,46 @@ package ru.practicum.shareit.booking.dto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.dto.ItemDtoWithDate;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BookingMapper {
 
-    public static Booking toBooking(BookingDto bookingDto, Item item, User booker) {
+    public static Booking toBooking(BookItemRequestDto bookItemRequestDto, Item item, User booker) {
         Booking booking = new Booking();
-        booking.setId(bookingDto.getId());
-        booking.setStart(bookingDto.getStart());
-        booking.setEnd(bookingDto.getEnd());
+        booking.setStart(bookItemRequestDto.getStart());
+        booking.setEnd(bookItemRequestDto.getEnd());
         booking.setItem(item);
         booking.setBooker(booker);
-        booking.setStatus(bookingDto.getStatus());
         return booking;
     }
 
-    public static BookingDto toBookingDtoIncome(Booking booking) {
+    public static BookingDto toBookingDto(Booking booking) {
         BookingDto bookingDto = new BookingDto();
         bookingDto.setId(booking.getId());
         bookingDto.setStart(booking.getStart());
         bookingDto.setEnd(booking.getEnd());
-        bookingDto.setItemId(booking.getItem().getId());
-        bookingDto.setBookerId(booking.getBooker().getId());
+        bookingDto.setBooker(new BookingDto.Booker(booking.getBooker().getId(), booking.getBooker().getName()));
+        bookingDto.setItem(new BookingDto.ItemBooking(booking.getItem().getId(), booking.getItem().getName()));
         bookingDto.setStatus(booking.getStatus());
         return bookingDto;
     }
 
-    public static BookingDtoOutcome toBookingDtoOutcome(Booking booking) {
-        BookingDtoOutcome bookingDtoOutcome = new BookingDtoOutcome();
-        bookingDtoOutcome.setId(booking.getId());
-        bookingDtoOutcome.setStart(booking.getStart());
-        bookingDtoOutcome.setEnd(booking.getEnd());
-        bookingDtoOutcome.setItem(booking.getItem());
-        bookingDtoOutcome.setBooker(booking.getBooker());
-        bookingDtoOutcome.setStatus(booking.getStatus());
-        return bookingDtoOutcome;
+    public static List<BookingDto> toListBookingDto(List<Booking> bookings) {
+        return bookings.stream()
+                .map(BookingMapper::toBookingDto)
+                .collect(Collectors.toList());
     }
 
-    public static BookingDtoForItemOwner toBookingDtoForItemOwner(Booking booking) {
-        BookingDtoForItemOwner bookingDtoWithoutDate = new BookingDtoForItemOwner();
-        bookingDtoWithoutDate.setId(booking.getId());
-        bookingDtoWithoutDate.setBookerId(booking.getBooker().getId());
-        bookingDtoWithoutDate.setStart(booking.getStart());
-        bookingDtoWithoutDate.setEnd(booking.getEnd());
-        bookingDtoWithoutDate.setStatus(booking.getStatus());
-        return bookingDtoWithoutDate;
+    public static ItemDtoWithDate.BookingDto toItemDtoWithDateToBookingDto(Booking booking) {
+        return new ItemDtoWithDate.BookingDto(booking.getId(),
+                booking.getStart(),
+                booking.getEnd(),
+                booking.getBooker().getId());
     }
 }

@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.Create;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Data
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class CommentDto {
     private long id;
 
-    @NotEmpty(groups = Create.class, message = "Text can not be empty")
+    @NotBlank(groups = Create.class, message = "Text can not be empty")
     private String text;
 
     private String authorName;

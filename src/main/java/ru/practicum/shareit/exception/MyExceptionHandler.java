@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class MyExceptionHandler {
-    @ResponseBody
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ValidationErrorResponse handleConstraintValidationException(ConstraintViolationException ex) {
@@ -27,7 +26,6 @@ public class MyExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public ValidationErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         log.error(ex.getMessage());
         final List<Violation> violations = ex.getBindingResult().getFieldErrors().stream()

@@ -19,7 +19,7 @@ public class Comment {
     @Column(name = "comment_id")
     private long id;
 
-    @Column(name = "text")
+    @Column(name = "text", nullable = false, length = 4000)
     private String text;
 
     @ManyToOne
@@ -31,5 +31,5 @@ public class Comment {
     private User author;
 
     @Column(name = "created")
-    private LocalDateTime created;
+    private LocalDateTime created = LocalDateTime.now();
 }

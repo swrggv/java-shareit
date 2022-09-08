@@ -25,11 +25,11 @@ public class Booking {
     @EqualsAndHashCode.Exclude
     private long id;
 
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
     private LocalDateTime start;
 
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
     private LocalDateTime end;
 

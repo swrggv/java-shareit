@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
@@ -25,12 +25,14 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     @Override
     public UserDto addUser(UserDto userDto) {
         User saved = userRepository.save(UserMapper.toUser(userDto));
         return UserMapper.toUserDto(saved);
     }
 
+    @Transactional
     @Override
     public UserDto updateUser(Long userId, UserDto patchUSer) {
         User oldUser = UserMapper.toUser(getUser(userId));
@@ -44,17 +46,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private User patch(User user, User patchUser) {
-        if (patchUser.getName() != null) {
-            user.setName(patchUser.getName());
-        }
-        if (patchUser.getEmail() != null) {
-            user.setEmail(patchUser.getEmail());
-        }
-        return user;
-    }
-
-    @Transactional(readOnly = true)
     @Override
     public UserDto getUser(Long userId) {
         Optional<User> user = userRepository.findById(userId);
@@ -65,17 +56,15 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(UserMapper::toUserDto)
-                .collect(Collectors.toList());
+        return UserMapper.toListUserDto(userRepository.findAll());
     }
 
     private boolean isValidPatch(UserDto userDto) {
@@ -83,5 +72,15 @@ public class UserServiceImpl implements UserService {
                 .filter(x -> x.getId() != (userDto.getId()))
                 .count();
         return number < 1;
+    }
+
+    private User patch(User user, User patchUser) {
+        if (patchUser.getName() != null) {
+            user.setName(patchUser.getName());
+        }
+        if (patchUser.getEmail() != null) {
+            user.setEmail(patchUser.getEmail());
+        }
+        return user;
     }
 }
