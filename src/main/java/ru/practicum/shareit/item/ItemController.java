@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.Create;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithDate;
 
 import java.util.List;
 
@@ -37,16 +39,18 @@ public class ItemController {
         return result;
     }
 
+    //ЭТОТ
     @GetMapping("/{itemId}")
-    public ItemDto getItemEachUser(@PathVariable long itemId) {
-        ItemDto result = itemService.getItemEachUserById(itemId);
+    public ItemDtoWithDate getItemEachUser(@PathVariable long itemId,
+                                           @RequestHeader("X-Sharer-User-Id") long ownerId) {
+        ItemDtoWithDate result = itemService.getItemEachUserById(itemId, ownerId);
         log.info("Get item {}", result);
         return result;
     }
 
     @GetMapping
-    public List<ItemDto> getItemOwnerUser(@RequestHeader("X-Sharer-User-Id") long userId) {
-        List<ItemDto> result = itemService.getAllItemsOfOwner(userId);
+    public List<ItemDtoWithDate> getItemOwnerUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+        List<ItemDtoWithDate> result = itemService.getAllItemsOfOwner(userId);
         log.info("Get all user's {} items", userId);
         return result;
     }
@@ -57,4 +61,13 @@ public class ItemController {
         log.info("Get available items with {}", text);
         return result;
     }
+
+    //пошли комменты
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addCommentToItem(@Validated(Create.class) @RequestBody CommentDto commentDto,
+                                       @PathVariable long itemId,
+                                       @RequestHeader("X-Sharer-User-Id") long userId) {
+        return itemService.addCommentToItem(itemId, userId, commentDto);
+    }
+
 }
