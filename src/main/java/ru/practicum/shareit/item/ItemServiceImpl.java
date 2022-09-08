@@ -122,12 +122,12 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    public Item fromOptionalToItem(long itemId) {
+    private Item fromOptionalToItem(long itemId) {
         return itemRepository.findById(itemId)
                 .orElseThrow(() -> new ModelNotFoundException(String.format("Item %s not found", itemId)));
     }
 
-    public User fromOptionalToUser(long userId) {
+    private User fromOptionalToUser(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ModelNotFoundException(String.format("User %s not found", userId)));
     }

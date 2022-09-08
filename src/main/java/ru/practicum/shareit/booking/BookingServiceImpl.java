@@ -180,7 +180,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new ModelNotFoundException(String.format("Booking %d not found", bookingId)));
     }
 
-    public User fromOptionalToUser(long userId) {
+    private User fromOptionalToUser(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ModelNotFoundException(String.format("User %s not found", userId)));
     }
