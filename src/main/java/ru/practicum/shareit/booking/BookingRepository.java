@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,41 +16,42 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<Booking> findBookingByBookerIdOrderByStartDesc(long bookerId);
+    List<Booking> findBookingByBookerId(long bookerId, Pageable pageable);
 
-    //тут
     @Query("from Booking b where b.booker.id = :bookerId and b.start <= :date and b.end >= :date")
     List<Booking> findBookingsCurrentForBooker(@Param("bookerId") long bookerId,
-                                               @Param("date") LocalDateTime date, Sort sort);
+                                               @Param("date") LocalDateTime date, Pageable pageable);
 
     @Query("from Booking b where b.booker.id = :bookerId and b.end < :date")
     List<Booking> findBookingsPastForBooker(@Param("bookerId") long bookerId, @Param("date") LocalDateTime date,
-                                            Sort sort);
+                                            Pageable pageable);
 
     @Query("from Booking b where b.booker.id = :bookerId and b.start > :date")
     List<Booking> findBookingsFutureForBooker(@Param("bookerId") long bookerId, @Param("date") LocalDateTime date,
-                                              Sort sort);
+                                              Pageable pageable);
 
     @Query("from Booking b where b.booker.id = :bookerId and b.status = :status")
-    List<Booking> findBookingsByStatusAndBookerId(@Param("bookerId") long bookerId, Status status);
+    List<Booking> findBookingsByStatusAndBookerId(@Param("bookerId") long bookerId, Status status,
+                                                  Pageable pageable);
 
     @Query("from Booking b where b.item.owner.id = :ownerId")
-    List<Booking> findAllBookingsForItemOwner(@Param("ownerId") long ownerId, Sort sort);
+    List<Booking> findAllBookingsForItemOwner(@Param("ownerId") long ownerId, Pageable pageable);
 
     @Query("from Booking b where b.item.owner.id = :ownerId and b.start <= :date and b.end >= :date")
     List<Booking> findBookingsCurrentForItemOwner(@Param("ownerId") long ownerId, @Param("date") LocalDateTime date,
-                                                  Sort sort);
+                                                  Pageable pageable);
 
     @Query("from Booking b where b.item.owner.id = :ownerId and b.end < :date")
     List<Booking> findBookingsPastForItemOwner(@Param("ownerId") long ownerId, @Param("date") LocalDateTime date,
-                                               Sort sort);
+                                               Pageable pageable);
 
     @Query("from Booking b where b.item.owner.id = :ownerId and b.start > :date")
     List<Booking> findBookingsFutureForItemOwner(@Param("ownerId") long ownerId, @Param("date") LocalDateTime date,
-                                                 Sort sort);
+                                                 Pageable pageable);
 
     @Query("from Booking b where b.item.owner.id = :ownerId and b.status = :status")
-    List<Booking> findBookingsByStatusForItemOwner(@Param("ownerId") long ownerId, @Param("status") Status status);
+    List<Booking> findBookingsByStatusForItemOwner(@Param("ownerId") long ownerId, @Param("status") Status status,
+                                                   Pageable pageable);
 
     /*@Query(value = "select exists(select * from bookings b " +
             "where (b.start_date, b.end_date) OVERLAPS (:start, :end) and b.item_id = :itemId)",

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 
+    //юзера уберу, сломается?
     public static Item toItem(ItemDto itemDto, @Nullable User user, @Nullable ItemRequest request) {
         Item item = new Item();
         item.setId(itemDto.getId());
@@ -20,6 +21,7 @@ public class ItemMapper {
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
         item.setOwner(user);
+        item.setItemRequest(request);
         item.setItemRequest(request);
         return item;
     }

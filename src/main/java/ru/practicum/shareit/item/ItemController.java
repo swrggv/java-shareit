@@ -9,11 +9,14 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithDate;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @RestController
 @RequestMapping("/items")
 @Slf4j
+@Validated
 public class ItemController {
     private final ItemService itemService;
 
@@ -49,15 +52,19 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDtoWithDate> getItemOwnerUser(@RequestHeader("X-Sharer-User-Id") long userId) {
-        List<ItemDtoWithDate> result = itemService.getAllItemsOfOwner(userId);
+    public List<ItemDtoWithDate> getItemOwnerUser(@RequestHeader("X-Sharer-User-Id") long userId,
+                                                  @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
+                                                  @RequestParam(value = "size", required = false, defaultValue = "20") int size) {
+        List<ItemDtoWithDate> result = itemService.getAllItemsOfOwner(userId, from, size);
         log.info("Get all user's {} items", userId);
         return result;
     }
 
     @GetMapping("/search")
-    public List<ItemDto> getItemAvailableToRenter(@RequestParam String text) {
-        List<ItemDto> result = itemService.getItemsAvailableToRent(text);
+    public List<ItemDto> getItemAvailableToRenter(@RequestParam String text,
+                                                  @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
+                                                  @RequestParam(value = "size", required = false, defaultValue = "20") int size) {
+        List<ItemDto> result = itemService.getItemsAvailableToRent(text, from, size);
         log.info("Get available items with {}", text);
         return result;
     }

@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Setter
 @ToString
 @EqualsAndHashCode
+@NoArgsConstructor
 public class Item {
 
     @Id
@@ -36,9 +37,7 @@ public class Item {
     @EqualsAndHashCode.Exclude
     private User owner;
 
-    @Transient
+    @ManyToOne
+    @JoinColumn(name = "request_id", referencedColumnName = "request_id")
     private ItemRequest itemRequest;
-
-    public Item() {
-    }
 }

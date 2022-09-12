@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -13,6 +15,8 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.requests.ItemRequestRepository;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -32,12 +36,23 @@ public class ItemServiceImpl implements ItemService {
 
     private final CommentRepository commentRepository;
 
+    private final ItemRequestRepository itemRequestRepository;
+
     @Transactional
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         User owner = fromOptionalToUser(userId);
-        Item result = itemRepository.save(ItemMapper.toItem(itemDto, owner, null));
+        Item result = itemRepository.save(ItemMapper.toItem(itemDto, owner, checkItemRequest(itemDto)));
         return ItemMapper.toItemDto(result);
+    }
+
+    private ItemRequest checkItemRequest(ItemDto itemDto) {
+        return itemDto.getRequestId() != null ? fromOptionalToRequest(itemDto.getRequestId()) : null;
+    }
+
+    private ItemRequest fromOptionalToRequest(long requestId) {
+        return itemRequestRepository.findById(requestId).orElseThrow(() ->
+                new ModelNotFoundException(String.format("Request %d not found", requestId)));
     }
 
     @Transactional
@@ -65,10 +80,13 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    //че по сортировке?
     @Override
-    public List<ItemDtoWithDate> getAllItemsOfOwner(long userId) {
+    public List<ItemDtoWithDate> getAllItemsOfOwner(long userId, int from, int size) {
         User owner = fromOptionalToUser(userId);
-        List<ItemDtoWithDate> items = ItemMapper.toListItemDtoWithDate(itemRepository.findByOwner(owner));
+        int page = getPageNumber(from, size);
+        List<ItemDtoWithDate> items = ItemMapper.toListItemDtoWithDate(
+                itemRepository.findByOwner(PageRequest.of(page, size), owner));
         for (ItemDtoWithDate item : items) {
             addBookingDtoForItemOwner(item);
         }
@@ -76,12 +94,17 @@ public class ItemServiceImpl implements ItemService {
         return items;
     }
 
+    private int getPageNumber(int from, int size) {
+        return from / size;
+    }
+
     @Override
-    public List<ItemDto> getItemsAvailableToRent(String text) {
+    public List<ItemDto> getItemsAvailableToRent(String text, int from, int size) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        List<Item> items = itemRepository.findByNameOrDescription(text);
+        int page = getPageNumber(from, size);
+        List<Item> items = itemRepository.findByNameOrDescription(PageRequest.of(page, size),text);
         return items.stream().map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

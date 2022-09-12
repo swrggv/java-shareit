@@ -7,10 +7,12 @@ import ru.practicum.shareit.Create;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
+@Validated
 public class BookingController {
     private final BookingService bookingService;
 
@@ -41,15 +43,19 @@ public class BookingController {
     @GetMapping()
     public List<BookingDto> getBookingByUserSorted(
             @RequestParam(name = "state", required = false, defaultValue = "ALL") State state,
-            @RequestHeader("X-Sharer-User-Id") long bookerId) {
-        return bookingService.getBookingByUserSorted(bookerId, state);
+            @RequestHeader("X-Sharer-User-Id") long bookerId,
+            @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
+            @RequestParam(value = "size", required = false, defaultValue = "20") int size) {
+        return bookingService.getBookingByUserSorted(bookerId, state, from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getBookingsForItemOwner(
             @RequestParam(name = "state", required = false, defaultValue = "ALL") State state,
-            @RequestHeader("X-Sharer-User-Id") long ownerId) {
-        return bookingService.getBookingByItemOwner(ownerId, state);
+            @RequestHeader("X-Sharer-User-Id") long ownerId,
+            @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
+            @RequestParam(value = "size", required = false, defaultValue = "20") int size) {
+        return bookingService.getBookingByItemOwner(ownerId, state, from, size);
     }
 
 
