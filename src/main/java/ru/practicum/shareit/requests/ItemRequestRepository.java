@@ -12,7 +12,9 @@ import java.util.List;
 
 public interface ItemRequestRepository extends JpaRepository<ItemRequest, Long> {
     List<ItemRequest> findItemRequestByRequestor(User requestor);
+
     List<ItemRequest> findAllByRequestor(User requestor, Sort sort);
+
     @Query(value = "from ItemRequest where requestor.id <> :requestorId")
     List<ItemRequest> findAllByRequestorNotLike(@Param("requestorId") long requestor, Pageable pageable);
 }

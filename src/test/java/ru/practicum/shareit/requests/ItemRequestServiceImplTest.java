@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
         properties = "db.name=test",
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@TestPropertySource(properties = { "db.name=test"})
+@TestPropertySource(properties = {"db.name=test"})
 class ItemRequestServiceImplTest {
     @Autowired
     private final ItemRequestService itemRequestService;

@@ -6,8 +6,12 @@ import java.util.List;
 
 public interface ItemRequestService {
     ItemRequestDto addRequest(ItemRequestDto itemRequestDto, long requestorId);
+
     List<ItemRequestDto> getAllRequestsForRequestor(long requestorId);
+
     List<ItemRequestDto> getAllRequests(long requestorId, int from, int size);
+
     List<ItemRequestDto> getAllRequests();
+
     ItemRequestDto getOneRequest(long requestId, long userId);
 }
