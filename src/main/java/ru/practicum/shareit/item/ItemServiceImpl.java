@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -17,11 +16,13 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.requests.ItemRequestRepository;
 import ru.practicum.shareit.requests.model.ItemRequest;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,11 +32,8 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-
     private final BookingRepository bookingRepository;
-
     private final CommentRepository commentRepository;
-
     private final ItemRequestRepository itemRequestRepository;
 
     @Transactional
@@ -44,15 +42,6 @@ public class ItemServiceImpl implements ItemService {
         User owner = fromOptionalToUser(userId);
         Item result = itemRepository.save(ItemMapper.toItem(itemDto, owner, checkItemRequest(itemDto)));
         return ItemMapper.toItemDto(result);
-    }
-
-    private ItemRequest checkItemRequest(ItemDto itemDto) {
-        return itemDto.getRequestId() != null ? fromOptionalToRequest(itemDto.getRequestId()) : null;
-    }
-
-    private ItemRequest fromOptionalToRequest(long requestId) {
-        return itemRequestRepository.findById(requestId).orElseThrow(() ->
-                new ModelNotFoundException(String.format("Request %d not found", requestId)));
     }
 
     @Transactional
@@ -80,7 +69,6 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    //че по сортировке?
     @Override
     public List<ItemDtoWithDate> getAllItemsOfOwner(long userId, int from, int size) {
         User owner = fromOptionalToUser(userId);
@@ -98,13 +86,22 @@ public class ItemServiceImpl implements ItemService {
         return from / size;
     }
 
+    private ItemRequest fromOptionalToRequest(long requestId) {
+        return itemRequestRepository.findById(requestId).orElseThrow(() ->
+                new ModelNotFoundException(String.format("Request %d not found", requestId)));
+    }
+
+    private ItemRequest checkItemRequest(ItemDto itemDto) {
+        return itemDto.getRequestId() != null ? fromOptionalToRequest(itemDto.getRequestId()) : null;
+    }
+
     @Override
     public List<ItemDto> getItemsAvailableToRent(String text, int from, int size) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
         int page = getPageNumber(from, size);
-        List<Item> items = itemRepository.findByNameOrDescription(PageRequest.of(page, size),text);
+        List<Item> items = itemRepository.findByNameOrDescription(PageRequest.of(page, size), text);
         return items.stream().map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

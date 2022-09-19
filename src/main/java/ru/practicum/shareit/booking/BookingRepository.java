@@ -1,8 +1,6 @@
 package ru.practicum.shareit.booking;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -53,15 +51,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findBookingsByStatusForItemOwner(@Param("ownerId") long ownerId, @Param("status") Status status,
                                                    Pageable pageable);
 
-    /*@Query(value = "select exists(select * from bookings b " +
-            "where (b.start_date, b.end_date) OVERLAPS (:start, :end) and b.item_id = :itemId)",
-            nativeQuery = true)*/
     @Query(value = "select exists(select * from bookings as b where not " +
             "(:start between b.start_date and b.end_date or " +
             ":end between b.start_date and b.end_date) and " +
             "b.item_id = :itemId)",
             nativeQuery = true)
-    boolean isBooked(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("itemId") long itemId);
+    boolean isFree(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("itemId") long itemId);
 
     @Query(value = "select * from bookings b " +
             "where b.item_id = :itemId and b.start_date < :date order by b.start_date limit  1",

@@ -68,19 +68,18 @@ public class BookingServiceImpl implements BookingService {
             if (booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
                 return BookingMapper.toBookingDto(booking);
             } else {
-                throw new ModelNotFoundException("User not found");
+                throw new ModelNotFoundException("Booking not found");
             }
         }
     }
 
     //этот
-        @Override
+    @Override
     public List<BookingDto> getBookingByUserSorted(long bookerId, State state, int from, int size) {
         if (!userRepository.existsById(bookerId)) {
             throw new ModelNotFoundException("User not found");
         }
         List<Booking> bookings;
-        // я думала нам дают на вход номер страницы
         int page = getPageNumber(from, size);
         Sort sort = Sort.by(Sort.Direction.DESC, "start");
         switch (state) {
@@ -206,7 +205,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new ModelNotFoundException(String.format("User %s not found", userId)));
     }
 
-    private boolean isBooked(LocalDateTime start, LocalDateTime end, long itemId) {
-        return bookingRepository.isBooked(start, end, itemId);
-    }
+    /*private boolean isBooked(LocalDateTime start, LocalDateTime end, long itemId) {
+        return bookingRepository.isFree(start, end, itemId);
+    }*/
 }

@@ -10,7 +10,6 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByItem(Item item);
-
     @Query("from Comment c where c.item.id = :itemId")
     List<Comment> findByItemId(@Param("itemId") long itemId);
 }

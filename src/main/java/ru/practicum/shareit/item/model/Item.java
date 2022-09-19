@@ -15,19 +15,15 @@ import javax.persistence.*;
 @EqualsAndHashCode
 @NoArgsConstructor
 public class Item {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
     @EqualsAndHashCode.Exclude
     private long id;
-
     @Column(name = "item_name")
     private String name;
-
     @Column(name = "item_description")
     private String description;
-
     @Column(name = "is_available")
     private Boolean available;
 
@@ -40,4 +36,12 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "request_id", referencedColumnName = "request_id")
     private ItemRequest itemRequest;
+
+    public Item(String name, String description, Boolean available, User owner, ItemRequest itemRequest) {
+        this.name = name;
+        this.description = description;
+        this.available = available;
+        this.owner = owner;
+        this.itemRequest = itemRequest;
+    }
 }

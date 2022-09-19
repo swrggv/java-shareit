@@ -18,9 +18,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ItemRequestServiceImpl implements ItemRequestService {
-
     private final ItemRequestRepository itemRequestRepository;
-
     private final UserRepository userRepository;
 
     @Transactional
@@ -38,7 +36,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return ItemRequestMapper.toItemRequestDtoList(itemRequestRepository.findAllByRequestor(requestor, sort));
     }
 
-    //этот
     @Override
     public List<ItemRequestDto> getAllRequests(long requestorId, int from, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
@@ -46,10 +43,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return ItemRequestMapper
                 .toItemRequestDtoList(itemRequestRepository
                         .findAllByRequestorNotLike(requestorId, PageRequest.of(page, size, sort)));
-    }
-
-    private int getPageNumber(int from, int size) {
-        return from / size;
     }
 
     @Override
@@ -60,7 +53,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto getOneRequest(long requestId, long userId) {
-        if(!userRepository.existsById(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new ModelNotFoundException(String.format("User %d not found", userId));
         }
         ItemRequest itemRequest = fromOptionalToRequest(requestId);
@@ -70,6 +63,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private User fromOptionalToUser(long userId) {
         return userRepository.findById(userId).
                 orElseThrow(() -> new ModelNotFoundException(String.format("User %d not found", userId)));
+    }
+
+    private int getPageNumber(int from, int size) {
+        return from / size;
     }
 
     private ItemRequest fromOptionalToRequest(long requestId) {
