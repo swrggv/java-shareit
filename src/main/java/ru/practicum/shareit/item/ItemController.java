@@ -10,7 +10,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithDate;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 @RestController

@@ -116,7 +116,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void getItemEachUserById_Owner_WithNextBooking(){
+    void getItemEachUserById_Owner_WithNextBooking() {
         UserDto booker = new UserDto("booker", "booker@gmail.com");
         booker = userService.addUser(booker);
 
@@ -140,7 +140,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void getItemEachUserById_Owner_WithLastBooking(){
+    void getItemEachUserById_Owner_WithLastBooking() {
         UserDto booker = new UserDto("booker", "booker@gmail.com");
         booker = userService.addUser(booker);
 

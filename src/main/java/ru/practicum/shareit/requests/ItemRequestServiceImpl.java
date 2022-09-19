@@ -61,8 +61,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     private User fromOptionalToUser(long userId) {
-        return userRepository.findById(userId).
-                orElseThrow(() -> new ModelNotFoundException(String.format("User %d not found", userId)));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ModelNotFoundException(String.format("User %d not found", userId)));
     }
 
     private int getPageNumber(int from, int size) {
