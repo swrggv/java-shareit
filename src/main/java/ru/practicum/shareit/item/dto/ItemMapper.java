@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 
-    //юзера уберу, сломается?
     public static Item toItem(ItemDto itemDto, @Nullable User user, @Nullable ItemRequest request) {
         Item item = new Item();
         item.setId(itemDto.getId());

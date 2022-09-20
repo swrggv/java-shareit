@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public class ItemRequestMapper {
 
     public static ItemRequest toItemRequest(ItemRequestDto itemRequestDto, User requestor) {
-        //надо айдишку устанавливать?
         ItemRequest itemRequest = new ItemRequest();
         itemRequest.setCreated(itemRequestDto.getCreated());
         itemRequest.setDescription(itemRequestDto.getDescription());

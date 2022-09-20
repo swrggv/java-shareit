@@ -19,9 +19,9 @@ public class User {
     @Column(name = "user_id")
     @EqualsAndHashCode.Exclude
     private long id;
-    @Column(name = "user_name")
+    @Column(name = "user_name", nullable = false, length = 200)
     private String name;
-    @Column(name = "user_email")
+    @Column(name = "user_email", nullable = false, length = 200)
     private String email;
 
     public User(String name, String email) {

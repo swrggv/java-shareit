@@ -16,7 +16,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findBookingByBookerId(long bookerId, Pageable pageable);
 
-    @Query("from Booking b where b.booker.id = :bookerId and b.start <= :date and b.end >= :date")
+    @Query("from Booking b where b.booker.id = :bookerId and :date between b.start and b.end")
     List<Booking> findBookingsCurrentForBooker(@Param("bookerId") long bookerId,
                                                @Param("date") LocalDateTime date, Pageable pageable);
 
@@ -35,7 +35,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("from Booking b where b.item.owner.id = :ownerId")
     List<Booking> findAllBookingsForItemOwner(@Param("ownerId") long ownerId, Pageable pageable);
 
-    @Query("from Booking b where b.item.owner.id = :ownerId and b.start <= :date and b.end >= :date")
+    @Query("from Booking b where b.item.owner.id = :ownerId and :date between b.start and b.end")
     List<Booking> findBookingsCurrentForItemOwner(@Param("ownerId") long ownerId, @Param("date") LocalDateTime date,
                                                   Pageable pageable);
 

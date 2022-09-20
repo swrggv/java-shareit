@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -20,7 +21,6 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,31 +74,17 @@ public class ItemServiceImpl implements ItemService {
         User owner = fromOptionalToUser(userId);
         int page = getPageNumber(from, size);
         List<ItemDtoWithDate> items = ItemMapper.toListItemDtoWithDate(
-                itemRepository.findByOwner(PageRequest.of(page, size), owner));
+                itemRepository.findByOwner(PageRequest.of(page, size, Sort.by("id")), owner));
         for (ItemDtoWithDate item : items) {
             addBookingDtoForItemOwner(item);
         }
-        Collections.sort(items, (a, b) -> a.getId() < b.getId() ? -1 : a.getId() == b.getId() ? 0 : 1);
         return items;
-    }
-
-    private int getPageNumber(int from, int size) {
-        return from / size;
-    }
-
-    private ItemRequest fromOptionalToRequest(long requestId) {
-        return itemRequestRepository.findById(requestId).orElseThrow(() ->
-                new ModelNotFoundException(String.format("Request %d not found", requestId)));
-    }
-
-    private ItemRequest checkItemRequest(ItemDto itemDto) {
-        return itemDto.getRequestId() != null ? fromOptionalToRequest(itemDto.getRequestId()) : null;
     }
 
     @Override
     public List<ItemDto> getItemsAvailableToRent(String text, int from, int size) {
         if (text.isBlank()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         int page = getPageNumber(from, size);
         List<Item> items = itemRepository.findByNameOrDescription(PageRequest.of(page, size), text);
@@ -132,6 +118,19 @@ public class ItemServiceImpl implements ItemService {
             itemDtoWithDate.setNextBooking(BookingMapper.toItemDtoWithDateToBookingDto(nextBooking));
         }
         return itemDtoWithDate;
+    }
+
+    private ItemRequest checkItemRequest(ItemDto itemDto) {
+        return itemDto.getRequestId() != null ? fromOptionalToRequest(itemDto.getRequestId()) : null;
+    }
+
+    private ItemRequest fromOptionalToRequest(long requestId) {
+        return itemRequestRepository.findById(requestId).orElseThrow(() ->
+                new ModelNotFoundException(String.format("Request %d not found", requestId)));
+    }
+
+    private int getPageNumber(int from, int size) {
+        return from / size;
     }
 
     private void addCommentsToItems(List<ItemDtoWithDate> items) {

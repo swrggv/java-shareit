@@ -73,7 +73,6 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    //этот
     @Override
     public List<BookingDto> getBookingByUserSorted(long bookerId, State state, int from, int size) {
         if (!userRepository.existsById(bookerId)) {
@@ -111,10 +110,6 @@ public class BookingServiceImpl implements BookingService {
                 throw new UnknownStateException("Unknown state: UNSUPPORTED_STATUS");
         }
         return BookingMapper.toListBookingDto(bookings);
-    }
-
-    private int getPageNumber(int from, int size) {
-        return from / size;
     }
 
     @Override
@@ -171,6 +166,10 @@ public class BookingServiceImpl implements BookingService {
         return booking;
     }
 
+    private int getPageNumber(int from, int size) {
+        return from / size;
+    }
+
 
     /* если чекать пересечение else if (isBooked(start, end, item.get().getId())) {
             throw new ValidationException("Dates is already booked");
@@ -178,7 +177,7 @@ public class BookingServiceImpl implements BookingService {
     private boolean isValid(BookItemRequestDto bookItemRequestDto, Item item, User booker) {
         LocalDateTime start = bookItemRequestDto.getStart();
         LocalDateTime end = bookItemRequestDto.getEnd();
-        if (end.isBefore(start) && !start.isEqual(end)) {
+        if (!start.isBefore(end)) {
             throw new ValidationException("End date should not be before start date");
         } else if (!item.getAvailable()) {
             throw new ValidationException(String.format("Item %s is not available", item.getId()));

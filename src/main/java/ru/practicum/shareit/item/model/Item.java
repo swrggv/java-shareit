@@ -27,9 +27,8 @@ public class Item {
     @Column(name = "is_available")
     private Boolean available;
 
-
-    @ManyToOne
-    @JoinColumn(name = "owner_id", referencedColumnName = "user_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner_id", nullable = false, referencedColumnName = "user_id")
     @EqualsAndHashCode.Exclude
     private User owner;
 

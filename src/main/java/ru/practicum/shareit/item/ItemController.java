@@ -53,7 +53,7 @@ public class ItemController {
     @GetMapping
     public List<ItemDtoWithDate> getItemOwnerUser(@RequestHeader("X-Sharer-User-Id") long userId,
                                                   @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
-                                                  @RequestParam(value = "size", required = false, defaultValue = "20") int size) {
+                                                  @RequestParam(value = "size", required = false, defaultValue = "20") @Min(1) int size) {
         List<ItemDtoWithDate> result = itemService.getAllItemsOfOwner(userId, from, size);
         log.info("Get all user's {} items", userId);
         return result;
@@ -62,7 +62,7 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> getItemAvailableToRenter(@RequestParam String text,
                                                   @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
-                                                  @RequestParam(value = "size", required = false, defaultValue = "20") int size) {
+                                                  @RequestParam(value = "size", required = false, defaultValue = "20") @Min(1) int size) {
         List<ItemDto> result = itemService.getItemsAvailableToRent(text, from, size);
         log.info("Get available items with {}", text);
         return result;

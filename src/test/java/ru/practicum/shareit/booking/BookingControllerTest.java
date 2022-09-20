@@ -42,18 +42,16 @@ class BookingControllerTest {
         bookItemRequestDto = new BookItemRequestDto(start, end, 1L);
     }
 
-    //проблемы со сравнением дат, если просто туда пишу переменную start то там в конце нули
-    //не совпадают, интернет прошерстила, ответа не нашла(
     @Test
     void addBooking() throws Exception {
         when(service.addBooking(bookItemRequestDto, 1L)).thenReturn(bookingDto);
 
         mockMvc.perform(
-                post("/bookings")
-                        .content(mapper.writeValueAsString(bookItemRequestDto))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1L)
-        )
+                        post("/bookings")
+                                .content(mapper.writeValueAsString(bookItemRequestDto))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("X-Sharer-User-Id", 1L)
+                )
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.start").value("2100-09-01T01:00:00"))
@@ -67,10 +65,10 @@ class BookingControllerTest {
         when(service.approveBooking(1L, true, 1L)).thenReturn(bookingDto);
 
         mockMvc.perform(
-                patch("/bookings/{bookingId}", 1L)
-                        .param("approved", "true")
-                        .header("X-Sharer-User-Id", 1L)
-        )
+                        patch("/bookings/{bookingId}", 1L)
+                                .param("approved", "true")
+                                .header("X-Sharer-User-Id", 1L)
+                )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.start").value("2100-09-01T01:00:00"))
@@ -99,9 +97,9 @@ class BookingControllerTest {
         when(service.getBookingByUserSorted(anyLong(), any(), anyInt(), anyInt())).thenReturn(bookings);
 
         mockMvc.perform(
-                get("/bookings")
-                        .header("X-Sharer-User-Id", 1L)
-        )
+                        get("/bookings")
+                                .header("X-Sharer-User-Id", 1L)
+                )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(bookings.size()));
     }
