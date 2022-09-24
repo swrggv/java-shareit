@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
@@ -16,4 +17,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Query("from Comment c where c.item.id = :itemId")
     List<Comment> findByItemId(@Param("itemId") long itemId);
+
+    List<Comment> findByItemIn(Collection<Item> item, Sort by);
 }

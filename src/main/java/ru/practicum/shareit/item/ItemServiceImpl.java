@@ -23,9 +23,7 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -64,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDtoWithDate getItemEachUserById(long itemId, long ownerId) {
         Item item = fromOptionalToItem(itemId);
         ItemDtoWithDate result = ItemMapper.toItemDtoWithDate(item);
-        addCommentsToItems(List.of(result));
+        addCommentsToItems(result);
         if (item.getOwner().getId() != ownerId) {
             return result;
         } else {
@@ -136,18 +134,13 @@ public class ItemServiceImpl implements ItemService {
         return from / size;
     }
 
-    private void addCommentsToItems(List<ItemDtoWithDate> items) {
-        /*List<Comment> comments;
-        for (ItemDtoWithDate item : items) {
-            comments = commentRepository.findByItemId(item.getId());
-            item.setComments(CommentMapper.toListCommentsDto(comments));
-        }*/
-        List<Long> allId = items.stream()
-                .map(ItemDtoWithDate::getId)
-                .collect(toList());
-        Map<Item, List<Comment>> comments = commentRepository.findAllById(allId)
+    private void addCommentsToItems(ItemDtoWithDate item) {
+        /*Map<Item, List<Comment>> comments = commentRepository.findByItemIn(items, Sort.by(DESC, "created"))
                 .stream()
-                .collect(groupingBy(Comment::getItem, toList()));
+                .map()
+                .collect(groupingBy(Comment::getItem, toList()));*/
+        List<Comment> comments = commentRepository.findByItemId(item.getId());
+        item.setComments(CommentMapper.toListCommentsDto(comments));
     }
 
     private Item fromOptionalToItem(long itemId) {
