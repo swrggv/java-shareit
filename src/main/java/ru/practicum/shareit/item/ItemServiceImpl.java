@@ -141,16 +141,13 @@ public class ItemServiceImpl implements ItemService {
         Map<Item, List<Comment>> comments = commentRepository.findByItemIn(items, Sort.by(DESC, "created"))
                 .stream()
                 .collect(groupingBy(Comment::getItem, toList()));
-        List<ItemDtoWithDate> itemsDto = new ArrayList<>();
-        for (Item item : comments.keySet()) {
-            ItemDtoWithDate itemDtoWithDate =
-                    createItemDtoWithDateWithComments(item, comments.getOrDefault(item, new ArrayList<>()));
-            itemsDto.add(itemDtoWithDate);
-        }
-        return itemsDto;
 
-        /*List<Comment> comments = commentRepository.findByItemId(item.getId());
-        item.setComments(CommentMapper.toListCommentsDto(comments));*/
+        List<ItemDtoWithDate> result = new ArrayList<>();
+        for (Item item : items) {
+            ItemDtoWithDate itemDtoWithDate = createItemDtoWithDateWithComments(item, comments.getOrDefault(item, Collections.emptyList()));
+            result.add(itemDtoWithDate);
+        }
+        return result;
     }
 
     private ItemDtoWithDate createItemDtoWithDateWithComments(Item item, List<Comment> comments) {
