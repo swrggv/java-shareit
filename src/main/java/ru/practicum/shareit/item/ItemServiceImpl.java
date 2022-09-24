@@ -21,10 +21,14 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
 @Slf4j
@@ -61,12 +65,11 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDtoWithDate getItemEachUserById(long itemId, long ownerId) {
         Item item = fromOptionalToItem(itemId);
-        ItemDtoWithDate result = ItemMapper.toItemDtoWithDate(item);
-        addCommentsToItems(result);
+        List<ItemDtoWithDate> result = addCommentsToItems(List.of(item));
         if (item.getOwner().getId() != ownerId) {
-            return result;
+            return result.get(0);
         } else {
-            return addBookingDtoForItemOwner(result);
+            return addBookingDtoForItemOwner(result.get(0));
         }
     }
 
@@ -134,13 +137,30 @@ public class ItemServiceImpl implements ItemService {
         return from / size;
     }
 
-    private void addCommentsToItems(ItemDtoWithDate item) {
-        /*Map<Item, List<Comment>> comments = commentRepository.findByItemIn(items, Sort.by(DESC, "created"))
+    private List<ItemDtoWithDate> addCommentsToItems(List<Item> items) {
+        Map<Item, List<Comment>> comments = commentRepository.findByItemIn(items, Sort.by(DESC, "created"))
                 .stream()
-                .map()
-                .collect(groupingBy(Comment::getItem, toList()));*/
-        List<Comment> comments = commentRepository.findByItemId(item.getId());
-        item.setComments(CommentMapper.toListCommentsDto(comments));
+                .collect(groupingBy(Comment::getItem, toList()));
+        List<ItemDtoWithDate> itemsDto = new ArrayList<>();
+        for (Item item : comments.keySet()) {
+            ItemDtoWithDate itemDtoWithDate =
+                    createItemDtoWithDateWithComments(item, comments.getOrDefault(item, new ArrayList<>()));
+            itemsDto.add(itemDtoWithDate);
+        }
+        return itemsDto;
+
+        /*List<Comment> comments = commentRepository.findByItemId(item.getId());
+        item.setComments(CommentMapper.toListCommentsDto(comments));*/
+    }
+
+    private ItemDtoWithDate createItemDtoWithDateWithComments(Item item, List<Comment> comments) {
+        ItemDtoWithDate itemDtoWithDate = ItemMapper.toItemDtoWithDate(item);
+        List<CommentDto> commentsDto = new ArrayList<>();
+        if (comments.size() != 0) {
+            commentsDto = CommentMapper.toListCommentsDto(comments);
+        }
+        itemDtoWithDate.setComments(commentsDto);
+        return itemDtoWithDate;
     }
 
     private Item fromOptionalToItem(long itemId) {
