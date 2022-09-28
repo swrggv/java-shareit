@@ -12,20 +12,20 @@ import javax.persistence.*;
 @Table(name = "users")
 @ToString
 @EqualsAndHashCode
+@NoArgsConstructor
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     @EqualsAndHashCode.Exclude
     private long id;
-
-    @Column(name = "user_name")
+    @Column(name = "user_name", nullable = false, length = 200)
     private String name;
-
-    @Column(name = "user_email")
+    @Column(name = "user_email", nullable = false, length = 200)
     private String email;
 
-    public User() {
+    public User(String name, String email) {
+        this.name = name;
+        this.email = email;
     }
 }

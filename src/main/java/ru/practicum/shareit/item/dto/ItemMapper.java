@@ -21,6 +21,7 @@ public class ItemMapper {
         item.setAvailable(itemDto.getAvailable());
         item.setOwner(user);
         item.setItemRequest(request);
+        item.setItemRequest(request);
         return item;
     }
 

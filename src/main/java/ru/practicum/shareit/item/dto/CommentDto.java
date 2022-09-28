@@ -13,11 +13,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CommentDto {
     private long id;
-
     @NotBlank(groups = Create.class, message = "Text can not be empty")
     private String text;
-
     private String authorName;
-
     private LocalDateTime created;
+
+    public CommentDto(String text, String authorName, LocalDateTime created) {
+        this.text = text;
+        this.authorName = authorName;
+        this.created = created;
+    }
 }
+
+

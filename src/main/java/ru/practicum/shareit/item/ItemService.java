@@ -13,9 +13,9 @@ public interface ItemService {
 
     ItemDtoWithDate getItemEachUserById(long itemId, long ownerId);
 
-    List<ItemDtoWithDate> getAllItemsOfOwner(long userId);
+    List<ItemDtoWithDate> getAllItemsOfOwner(long userId, int from, int size);
 
-    List<ItemDto> getItemsAvailableToRent(String text);
+    List<ItemDto> getItemsAvailableToRent(String text, int from, int size);
 
     CommentDto addCommentToItem(long itemId, long userId, CommentDto commentDto);
 }

@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -13,12 +15,20 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.requests.ItemRequestRepository;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
 @Slf4j
@@ -27,16 +37,15 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-
     private final BookingRepository bookingRepository;
-
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Transactional
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         User owner = fromOptionalToUser(userId);
-        Item result = itemRepository.save(ItemMapper.toItem(itemDto, owner, null));
+        Item result = itemRepository.save(ItemMapper.toItem(itemDto, owner, checkItemRequest(itemDto)));
         return ItemMapper.toItemDto(result);
     }
 
@@ -45,9 +54,9 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto updateItem(ItemDto patchItem, long itemId, long userId) {
         if (isOwner(itemId, userId)) {
             User user = fromOptionalToUser(userId);
-            Item oldItem = fromOptionalToItem(itemId);
-            Item updatedItem = patch(oldItem, ItemMapper.toItem(patchItem, user, null));
-            return ItemMapper.toItemDto(itemRepository.save(updatedItem));
+            Item item = fromOptionalToItem(itemId);
+            patch(item, ItemMapper.toItem(patchItem, user, null));
+            return ItemMapper.toItemDto(item);
         } else {
             throw new NoRootException(String.format("Access is forbidden. User %s doesn't have access rights", userId));
         }
@@ -56,34 +65,35 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDtoWithDate getItemEachUserById(long itemId, long ownerId) {
         Item item = fromOptionalToItem(itemId);
-        ItemDtoWithDate result = ItemMapper.toItemDtoWithDate(item);
-        addCommentsToItems(List.of(result));
+        List<ItemDtoWithDate> result = addCommentsToItems(List.of(item));
         if (item.getOwner().getId() != ownerId) {
-            return result;
+            return result.get(0);
         } else {
-            return addBookingDtoForItemOwner(result);
+            return addBookingDtoForItemOwner(result.get(0));
         }
     }
 
     @Override
-    public List<ItemDtoWithDate> getAllItemsOfOwner(long userId) {
+    public List<ItemDtoWithDate> getAllItemsOfOwner(long userId, int from, int size) {
         User owner = fromOptionalToUser(userId);
-        List<ItemDtoWithDate> items = ItemMapper.toListItemDtoWithDate(itemRepository.findByOwner(owner));
+        int page = getPageNumber(from, size);
+        List<ItemDtoWithDate> items = ItemMapper.toListItemDtoWithDate(
+                itemRepository.findByOwner(PageRequest.of(page, size, Sort.by("id")), owner));
         for (ItemDtoWithDate item : items) {
             addBookingDtoForItemOwner(item);
         }
-        Collections.sort(items, (a, b) -> a.getId() < b.getId() ? -1 : a.getId() == b.getId() ? 0 : 1);
         return items;
     }
 
     @Override
-    public List<ItemDto> getItemsAvailableToRent(String text) {
+    public List<ItemDto> getItemsAvailableToRent(String text, int from, int size) {
         if (text.isBlank()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-        List<Item> items = itemRepository.findByNameOrDescription(text);
+        int page = getPageNumber(from, size);
+        List<Item> items = itemRepository.findByNameOrDescription(PageRequest.of(page, size), text);
         return items.stream().map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Transactional
@@ -114,12 +124,40 @@ public class ItemServiceImpl implements ItemService {
         return itemDtoWithDate;
     }
 
-    private void addCommentsToItems(List<ItemDtoWithDate> items) {
-        List<Comment> comments;
-        for (ItemDtoWithDate item : items) {
-            comments = commentRepository.findByItemId(item.getId());
-            item.setComments(CommentMapper.toListCommentsDto(comments));
+    private ItemRequest checkItemRequest(ItemDto itemDto) {
+        return itemDto.getRequestId() != null ? fromOptionalToRequest(itemDto.getRequestId()) : null;
+    }
+
+    private ItemRequest fromOptionalToRequest(long requestId) {
+        return itemRequestRepository.findById(requestId).orElseThrow(() ->
+                new ModelNotFoundException(String.format("Request %d not found", requestId)));
+    }
+
+    private int getPageNumber(int from, int size) {
+        return from / size;
+    }
+
+    private List<ItemDtoWithDate> addCommentsToItems(List<Item> items) {
+        Map<Item, List<Comment>> comments = commentRepository.findByItemIn(items, Sort.by(DESC, "created"))
+                .stream()
+                .collect(groupingBy(Comment::getItem, toList()));
+
+        List<ItemDtoWithDate> result = new ArrayList<>();
+        for (Item item : items) {
+            ItemDtoWithDate itemDtoWithDate = createItemDtoWithDateWithComments(item, comments.getOrDefault(item, Collections.emptyList()));
+            result.add(itemDtoWithDate);
         }
+        return result;
+    }
+
+    private ItemDtoWithDate createItemDtoWithDateWithComments(Item item, List<Comment> comments) {
+        ItemDtoWithDate itemDtoWithDate = ItemMapper.toItemDtoWithDate(item);
+        List<CommentDto> commentsDto = new ArrayList<>();
+        if (comments.size() != 0) {
+            commentsDto = CommentMapper.toListCommentsDto(comments);
+        }
+        itemDtoWithDate.setComments(commentsDto);
+        return itemDtoWithDate;
     }
 
     private Item fromOptionalToItem(long itemId) {
