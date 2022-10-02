@@ -26,7 +26,7 @@ public class UserController {
     }
 
     @PatchMapping(path = "/{userId}")
-    @Cacheable("updateUser")
+    //@Cacheable("updateUser")
     public ResponseEntity<Object> updateUser(@PathVariable Long userId,
                                              @Validated(Update.class) @RequestBody UserDto patchUser) {
         log.info("User {} was changed", userId);
@@ -34,21 +34,21 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    @Cacheable("getUser")
+    //@Cacheable("getUser")
     public ResponseEntity<Object> getUser(@PathVariable Long userId) {
         log.info("Get user {}", userId);
         return userClient.getUser(userId);
     }
 
     @DeleteMapping("/{userId}")
-    @Cacheable("deleteUser")
+    //@Cacheable("deleteUser")
     public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
         log.info("User was deleted {}", userId);
         return userClient.deleteUser(userId);
     }
 
     @GetMapping
-    @Cacheable("getOneRequest")
+    //@Cacheable("getOneRequest")
     public ResponseEntity<Object> getAllUsers() {
         log.info("Get all users");
         return userClient.getAllUsers();

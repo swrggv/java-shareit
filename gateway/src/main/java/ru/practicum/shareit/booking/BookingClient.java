@@ -28,7 +28,7 @@ public class BookingClient extends BaseClient {
 
     public ResponseEntity<Object> getBookingByUserSorted(long userId, State state, Integer from, Integer size) {
         Map<String, Object> parameters = Map.of(
-                "state", state.name(),
+                "state", state,
                 "from", from,
                 "size", size
         );
@@ -43,7 +43,7 @@ public class BookingClient extends BaseClient {
         Map<String, Object> parameters = Map.of(
                 "approved", approved
         );
-        return patch("/" + bookingId + "?approved={approved}", userId, parameters);
+        return patch("/" + bookingId + "?approved={approved}", userId, parameters, null);
     }
 
     public ResponseEntity<Object> getBookingByIdIfOwnerOrBooker(long bookingId, long userId) {
@@ -52,7 +52,7 @@ public class BookingClient extends BaseClient {
 
     public ResponseEntity<Object> getBookingByItemOwner(long ownerId, State state, int from, int size) {
         Map<String, Object> parameters = Map.of(
-                "state", state.name(),
+                "state", state,
                 "from", from,
                 "size", size
         );

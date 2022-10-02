@@ -31,14 +31,12 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    @Cacheable("getAllRequestsForRequestor")
     public ResponseEntity<Object> getAllRequestsForRequestor(@RequestHeader("X-Sharer-User-Id") long requestorId) {
         log.info("Get all requests for requestor {}", requestorId);
         return itemRequestClient.getAllRequestsForRequestor(requestorId);
     }
 
     @GetMapping("/all")
-    @Cacheable("getAllRequests")
     public ResponseEntity<Object> getAllRequests(@RequestParam(value = "from", required = false, defaultValue = "0")
                                                @Min(0) int from,
                                                @RequestParam(value = "size", required = false, defaultValue = "20")
@@ -49,7 +47,6 @@ public class ItemRequestController {
     }
 
     @GetMapping("{requestId}")
-    @Cacheable("getOneRequest")
     public ResponseEntity<Object> getOneRequest(@PathVariable long requestId,
                                         @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Get request {}", requestId);

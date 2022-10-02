@@ -2,7 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,6 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    @Cacheable("updateItem")
     public ResponseEntity<Object> updateItem(@RequestBody ItemDto patchItem,
                                              @PathVariable Long itemId,
                                              @RequestHeader("X-Sharer-User-Id") long userId) {
@@ -38,7 +36,6 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    @Cacheable("getItemEachUser")
     public ResponseEntity<Object> getItemEachUser(@PathVariable long itemId,
                                                   @RequestHeader("X-Sharer-User-Id") long ownerId) {
         log.info("Get item {}", itemId);
@@ -46,7 +43,6 @@ public class ItemController {
     }
 
     @GetMapping
-    @Cacheable("getItemOwnerUser")
     public ResponseEntity<Object> getItemOwnerUser(@RequestHeader("X-Sharer-User-Id") long userId,
                                                    @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
                                                    @RequestParam(value = "size", required = false, defaultValue = "20") @Min(1) int size) {
@@ -55,7 +51,6 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    @Cacheable("getItemAvailableToRenter")
     public ResponseEntity<Object> getItemAvailableToRenter(@RequestParam String text,
                                                            @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
                                                            @RequestParam(value = "size", required = false, defaultValue = "20") @Min(1) int size) {
