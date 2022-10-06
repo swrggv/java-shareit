@@ -42,4 +42,11 @@ public class MyExceptionHandler {
         log.error(ex.getMessage());
         return new Violation(ex.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Violation handleValidationException(ValidationException ex) {
+        log.error(ex.getMessage());
+        return new Violation(ex.getMessage());
+    }
 }
