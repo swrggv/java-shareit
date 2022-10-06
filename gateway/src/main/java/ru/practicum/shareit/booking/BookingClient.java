@@ -10,6 +10,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.client.BaseClient;
 
+import javax.validation.ValidationException;
 import java.util.Map;
 
 @Service
@@ -36,6 +37,9 @@ public class BookingClient extends BaseClient {
     }
 
     public ResponseEntity<Object> addBooking(BookItemRequestDto bookItemRequestDto, long userId) {
+        if (bookItemRequestDto.getEnd().isBefore(bookItemRequestDto.getStart())) {
+            throw new ValidationException("End cannot be before  start");
+        }
         return post("", userId, bookItemRequestDto);
     }
 
