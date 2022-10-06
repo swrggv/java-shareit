@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto addBooking(BookItemRequestDto bookItemRequestDto, long userId) {
         Item item = fromOptionalToItem(bookItemRequestDto.getItemId());
         User booker = fromOptionalToUser(userId);
-        if (isValid(bookItemRequestDto, item, booker)) {
+        if (isValid(item, booker)) {
             Booking booking = BookingMapper.toBooking(bookItemRequestDto, item, booker);
             booking.setStatus(Status.WAITING);
             Booking result = bookingRepository.save(booking);
@@ -174,12 +174,8 @@ public class BookingServiceImpl implements BookingService {
     /* если чекать пересечение else if (isBooked(start, end, item.get().getId())) {
             throw new ValidationException("Dates is already booked");
         }*/
-    private boolean isValid(BookItemRequestDto bookItemRequestDto, Item item, User booker) {
-        LocalDateTime start = bookItemRequestDto.getStart();
-        LocalDateTime end = bookItemRequestDto.getEnd();
-        if (!start.isBefore(end)) {
-            throw new ValidationException("End date should not be before start date");
-        } else if (!item.getAvailable()) {
+    private boolean isValid(Item item, User booker) {
+        if (!item.getAvailable()) {
             throw new ValidationException(String.format("Item %s is not available", item.getId()));
         } else if (item.getOwner().getId() == booker.getId()) {
             throw new ModelNotFoundException("User can not book his own item");

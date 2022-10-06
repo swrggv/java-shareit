@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
 
-import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -36,9 +35,9 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestDto> getAllRequests(@RequestParam(value = "from", required = false, defaultValue = "0")
-                                               @Min(0) int from,
+                                               int from,
                                                @RequestParam(value = "size", required = false, defaultValue = "20")
-                                               @Min(1) int size,
+                                               int size,
                                                @RequestHeader("X-Sharer-User-Id") long requestorId) {
         List<ItemRequestDto> result = itemRequestService.getAllRequests(requestorId, from, size);
         log.info("Get all requests");

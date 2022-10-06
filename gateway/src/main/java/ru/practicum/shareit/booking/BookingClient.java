@@ -9,8 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.client.BaseClient;
+import ru.practicum.shareit.exception.ValidationException;
 
-import javax.validation.ValidationException;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -37,8 +38,10 @@ public class BookingClient extends BaseClient {
     }
 
     public ResponseEntity<Object> addBooking(BookItemRequestDto bookItemRequestDto, long userId) {
-        if (bookItemRequestDto.getEnd().isBefore(bookItemRequestDto.getStart())) {
-            throw new ValidationException("End cannot be before  start");
+        LocalDateTime start = bookItemRequestDto.getStart();
+        LocalDateTime end = bookItemRequestDto.getEnd();
+        if (!start.isBefore(end)) {
+            throw new ValidationException("End date should not be before start date");
         }
         return post("", userId, bookItemRequestDto);
     }

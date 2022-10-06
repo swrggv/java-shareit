@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
-import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -49,8 +48,8 @@ public class BookingController {
     public List<BookingDto> getBookingByUserSorted(
             @RequestParam(name = "state", required = false, defaultValue = "ALL") State state,
             @RequestHeader("X-Sharer-User-Id") long bookerId,
-            @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
-            @RequestParam(value = "size", required = false, defaultValue = "20") @Min(1) int size) {
+            @RequestParam(value = "from", required = false, defaultValue = "0") int from,
+            @RequestParam(value = "size", required = false, defaultValue = "20") int size) {
         List<BookingDto> result = bookingService.getBookingByUserSorted(bookerId, state, from, size);
         log.info("Get all bookings for booker {}", bookerId);
         return result;
@@ -60,8 +59,8 @@ public class BookingController {
     public List<BookingDto> getBookingsForItemOwner(
             @RequestParam(name = "state", required = false, defaultValue = "ALL") State state,
             @RequestHeader("X-Sharer-User-Id") long ownerId,
-            @RequestParam(value = "from", required = false, defaultValue = "0") @Min(0) int from,
-            @RequestParam(value = "size", required = false, defaultValue = "20") @Min(1) int size) {
+            @RequestParam(value = "from", required = false, defaultValue = "0") int from,
+            @RequestParam(value = "size", required = false, defaultValue = "20") int size) {
         List<BookingDto> result = bookingService.getBookingByItemOwner(ownerId, state, from, size);
         log.info("Get all bookings for item owner {}", ownerId);
         return result;
