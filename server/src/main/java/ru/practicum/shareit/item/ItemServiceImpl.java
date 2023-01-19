@@ -41,12 +41,14 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final ItemRequestRepository itemRequestRepository;
 
+    private final ItemMapperNew mapper;
+
     @Transactional
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         User owner = fromOptionalToUser(userId);
-        Item result = itemRepository.save(ItemMapper.toItem(itemDto, owner, checkItemRequest(itemDto)));
-        return ItemMapper.toItemDto(result);
+        Item result = itemRepository.save(mapper.toItem(itemDto, owner, checkItemRequest(itemDto)));
+        return mapper.toItemDto(result);
     }
 
     @Transactional
@@ -55,8 +57,8 @@ public class ItemServiceImpl implements ItemService {
         if (isOwner(itemId, userId)) {
             User user = fromOptionalToUser(userId);
             Item item = fromOptionalToItem(itemId);
-            patch(item, ItemMapper.toItem(patchItem, user, null));
-            return ItemMapper.toItemDto(item);
+            patch(item, mapper.toItem(patchItem, user, (item.getItemRequest() == null ? item.getItemRequest() : null)));
+            return mapper.toItemDto(item);
         } else {
             throw new NoRootException(String.format("Access is forbidden. User %s doesn't have access rights", userId));
         }
@@ -77,12 +79,11 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDtoWithDate> getAllItemsOfOwner(long userId, int from, int size) {
         User owner = fromOptionalToUser(userId);
         int page = getPageNumber(from, size);
-        List<ItemDtoWithDate> items = ItemMapper.toListItemDtoWithDate(
-                itemRepository.findByOwner(PageRequest.of(page, size, Sort.by("id")), owner));
-        for (ItemDtoWithDate item : items) {
-            addBookingDtoForItemOwner(item);
-        }
-        return items;
+        return mapper.toListItemDtoWithDate(
+                itemRepository.findByOwner(PageRequest.of(page, size, Sort.by("id")), owner))
+                .stream()
+                .map(this::addBookingDtoForItemOwner)
+                .collect(toList());
     }
 
     @Override
@@ -92,7 +93,8 @@ public class ItemServiceImpl implements ItemService {
         }
         int page = getPageNumber(from, size);
         List<Item> items = itemRepository.findByNameOrDescription(PageRequest.of(page, size), text);
-        return items.stream().map(ItemMapper::toItemDto)
+        return items.stream()
+                .map(mapper::toItemDto)
                 .collect(toList());
     }
 
@@ -102,8 +104,8 @@ public class ItemServiceImpl implements ItemService {
         Item item = fromOptionalToItem(itemId);
         if (bookingRepository.isExists(itemId, userId, LocalDateTime.now())) {
             User author = fromOptionalToUser(userId);
-            Comment comment = CommentMapper.toComment(commentDto, item, author);
-            commentDto = CommentMapper.toCommentDto(commentRepository.save(comment));
+            Comment comment = mapper.toComment(commentDto, item, author);
+            commentDto = mapper.toCommentDto(commentRepository.save(comment));
         } else {
             throw new ValidationException(String.format("User %s did not book item %s", userId, item.getId()));
         }
@@ -151,10 +153,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private ItemDtoWithDate createItemDtoWithDateWithComments(Item item, List<Comment> comments) {
-        ItemDtoWithDate itemDtoWithDate = ItemMapper.toItemDtoWithDate(item);
+        ItemDtoWithDate itemDtoWithDate = mapper.toItemDtoWithDate(item);
         List<CommentDto> commentsDto = new ArrayList<>();
         if (comments.size() != 0) {
-            commentsDto = CommentMapper.toListCommentsDto(comments);
+            commentsDto = mapper.toListCommentsDto(comments);
         }
         itemDtoWithDate.setComments(commentsDto);
         return itemDtoWithDate;
