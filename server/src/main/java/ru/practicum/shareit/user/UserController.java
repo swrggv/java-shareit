@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -19,7 +20,7 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto addUser(@RequestBody UserDto user) {
+    public UserDto addUser(@Valid @RequestBody UserDto user) {
         UserDto result = userService.addUser(user);
         log.info("User {} was added", result);
         return result;
