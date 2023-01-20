@@ -15,8 +15,8 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.requests.ItemRequestRepository;
-import ru.practicum.shareit.requests.model.ItemRequest;
+import ru.practicum.shareit.requests.RequestRepository;
+import ru.practicum.shareit.requests.model.Request;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -39,16 +39,18 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
-    private final ItemRequestRepository itemRequestRepository;
+    private final RequestRepository requestRepository;
 
-    private final ItemMapperNew mapper;
+    private final ItemMapperNew itemMapper;
+
+    private final BookingMapper bookingMapper;
 
     @Transactional
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         User owner = fromOptionalToUser(userId);
-        Item result = itemRepository.save(mapper.toItem(itemDto, owner, checkItemRequest(itemDto)));
-        return mapper.toItemDto(result);
+        Item result = itemRepository.save(itemMapper.toItem(itemDto, owner, checkItemRequest(itemDto)));
+        return itemMapper.toItemDto(result);
     }
 
     @Transactional
@@ -57,8 +59,8 @@ public class ItemServiceImpl implements ItemService {
         if (isOwner(itemId, userId)) {
             User user = fromOptionalToUser(userId);
             Item item = fromOptionalToItem(itemId);
-            patch(item, mapper.toItem(patchItem, user, (item.getItemRequest() == null ? item.getItemRequest() : null)));
-            return mapper.toItemDto(item);
+            patch(item, itemMapper.toItem(patchItem, user, (item.getRequest() == null ? item.getRequest() : null)));
+            return itemMapper.toItemDto(item);
         } else {
             throw new NoRootException(String.format("Access is forbidden. User %s doesn't have access rights", userId));
         }
@@ -79,7 +81,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDtoWithDate> getAllItemsOfOwner(long userId, int from, int size) {
         User owner = fromOptionalToUser(userId);
         int page = getPageNumber(from, size);
-        return mapper.toListItemDtoWithDate(
+        return itemMapper.toListItemDtoWithDate(
                 itemRepository.findByOwner(PageRequest.of(page, size, Sort.by("id")), owner))
                 .stream()
                 .map(this::addBookingDtoForItemOwner)
@@ -94,7 +96,7 @@ public class ItemServiceImpl implements ItemService {
         int page = getPageNumber(from, size);
         List<Item> items = itemRepository.findByNameOrDescription(PageRequest.of(page, size), text);
         return items.stream()
-                .map(mapper::toItemDto)
+                .map(itemMapper::toItemDto)
                 .collect(toList());
     }
 
@@ -104,8 +106,8 @@ public class ItemServiceImpl implements ItemService {
         Item item = fromOptionalToItem(itemId);
         if (bookingRepository.isExists(itemId, userId, LocalDateTime.now())) {
             User author = fromOptionalToUser(userId);
-            Comment comment = mapper.toComment(commentDto, item, author);
-            commentDto = mapper.toCommentDto(commentRepository.save(comment));
+            Comment comment = itemMapper.toComment(commentDto, item, author);
+            commentDto = itemMapper.toCommentDto(commentRepository.save(comment));
         } else {
             throw new ValidationException(String.format("User %s did not book item %s", userId, item.getId()));
         }
@@ -118,20 +120,20 @@ public class ItemServiceImpl implements ItemService {
         Booking nextBooking = bookingRepository.findBookingByItemWithDateAfter(itemDtoWithDate.getId(),
                 LocalDateTime.now());
         if (lastBooking != null) {
-            itemDtoWithDate.setLastBooking(BookingMapper.toItemDtoWithDateToBookingDto(lastBooking));
+            itemDtoWithDate.setLastBooking(bookingMapper.toItemDtoWithDateToBookingDto(lastBooking));
         }
         if (nextBooking != null) {
-            itemDtoWithDate.setNextBooking(BookingMapper.toItemDtoWithDateToBookingDto(nextBooking));
+            itemDtoWithDate.setNextBooking(bookingMapper.toItemDtoWithDateToBookingDto(nextBooking));
         }
         return itemDtoWithDate;
     }
 
-    private ItemRequest checkItemRequest(ItemDto itemDto) {
+    private Request checkItemRequest(ItemDto itemDto) {
         return itemDto.getRequestId() != null ? fromOptionalToRequest(itemDto.getRequestId()) : null;
     }
 
-    private ItemRequest fromOptionalToRequest(long requestId) {
-        return itemRequestRepository.findById(requestId).orElseThrow(() ->
+    private Request fromOptionalToRequest(long requestId) {
+        return requestRepository.findById(requestId).orElseThrow(() ->
                 new ModelNotFoundException(String.format("Request %d not found", requestId)));
     }
 
@@ -153,10 +155,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private ItemDtoWithDate createItemDtoWithDateWithComments(Item item, List<Comment> comments) {
-        ItemDtoWithDate itemDtoWithDate = mapper.toItemDtoWithDate(item);
+        ItemDtoWithDate itemDtoWithDate = itemMapper.toItemDtoWithDate(item);
         List<CommentDto> commentsDto = new ArrayList<>();
         if (comments.size() != 0) {
-            commentsDto = mapper.toListCommentsDto(comments);
+            commentsDto = itemMapper.toListCommentsDto(comments);
         }
         itemDtoWithDate.setComments(commentsDto);
         return itemDtoWithDate;

@@ -3,10 +3,9 @@ package ru.practicum.shareit.item.dto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
-import org.springframework.lang.Nullable;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.requests.model.ItemRequest;
+import ru.practicum.shareit.requests.model.Request;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -17,13 +16,13 @@ public interface ItemMapperNew {
     @Mapping(source = "itemDto.name", target = "name")
     @Mapping(source = "itemDto.description", target = "description")
     @Mapping(source = "user", target = "owner")
-    @Mapping(source = "request", target = "itemRequest")
-    Item toItem(ItemDto itemDto, User user, ItemRequest request);
+    @Mapping(source = "request", target = "request")
+    Item toItem(ItemDto itemDto, User user, Request request);
 
-    @Mapping(source = "item.itemRequest.id", target = "requestId")
+    @Mapping(source = "item.request.id", target = "requestId")
     ItemDto toItemDto(Item item);
 
-    @Mapping(source = "item.itemRequest.id", target = "requestId", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    @Mapping(source = "item.request.id", target = "requestId", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     ItemDtoWithDate toItemDtoWithDate(Item item);
 
     List<ItemDtoWithDate> toListItemDtoWithDate(List<Item> items);

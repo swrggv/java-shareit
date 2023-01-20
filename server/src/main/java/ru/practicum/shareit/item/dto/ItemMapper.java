@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.requests.model.ItemRequest;
+import ru.practicum.shareit.requests.model.Request;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -13,15 +13,15 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 
-    public static Item toItem(ItemDto itemDto, @Nullable User user, @Nullable ItemRequest request) {
+    public static Item toItem(ItemDto itemDto, @Nullable User user, @Nullable Request request) {
         Item item = new Item();
         item.setId(itemDto.getId());
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
         item.setOwner(user);
-        item.setItemRequest(request);
-        item.setItemRequest(request);
+        item.setRequest(request);
+        item.setRequest(request);
         return item;
     }
 
@@ -31,7 +31,7 @@ public class ItemMapper {
         itemDto.setName(item.getName());
         itemDto.setDescription(item.getDescription());
         itemDto.setAvailable(item.getAvailable());
-        itemDto.setRequestId(item.getItemRequest() != null ? item.getItemRequest().getId() : null);
+        itemDto.setRequestId(item.getRequest() != null ? item.getRequest().getId() : null);
         return itemDto;
     }
 
@@ -41,7 +41,7 @@ public class ItemMapper {
         itemDtoWithDate.setName(item.getName());
         itemDtoWithDate.setDescription(item.getDescription());
         itemDtoWithDate.setAvailable(item.getAvailable());
-        itemDtoWithDate.setRequestId(item.getItemRequest() != null ? item.getItemRequest().getId() : null);
+        itemDtoWithDate.setRequestId(item.getRequest() != null ? item.getRequest().getId() : null);
         return itemDtoWithDate;
     }
 
