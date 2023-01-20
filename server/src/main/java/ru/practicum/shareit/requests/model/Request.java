@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "requests")
-public class ItemRequest {
+public class Request {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,10 +33,10 @@ public class ItemRequest {
     @Column(name = "created")
     @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
     private LocalDateTime created;
-    @OneToMany(mappedBy = "itemRequest")
+    @OneToMany(mappedBy = "request")
     private List<Item> items = new ArrayList<>();
 
-    public ItemRequest(String description, User requestor, LocalDateTime created, List<Item> items) {
+    public Request(String description, User requestor, LocalDateTime created, List<Item> items) {
         this.description = description;
         this.requestor = requestor;
         this.created = created;

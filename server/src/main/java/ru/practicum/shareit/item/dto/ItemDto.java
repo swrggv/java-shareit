@@ -4,21 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItemDto {
     private long id;
+    @NotBlank(message = "Item name can not be empty")
     private String name;
+    @NotBlank(message = "Item description can not be empty")
     private String description;
+    @NotNull(message = "Item Available can not be empty")
     private Boolean available;
     private Long requestId;
-
-    public ItemDto(String name, String description, Boolean available, Long requestId) {
-        this.name = name;
-        this.description = description;
-        this.available = available;
-        this.requestId = requestId;
-    }
 }

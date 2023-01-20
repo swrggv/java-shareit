@@ -18,25 +18,35 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final UserMapper mapper;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper mapper) {
         this.userRepository = userRepository;
+        this.mapper = mapper;
     }
 
     @Transactional
     @Override
     public UserDto addUser(UserDto userDto) {
-        User saved = userRepository.save(UserMapper.toUser(userDto));
-        return UserMapper.toUserDto(saved);
+        if (checkExistingEmail(userDto.getEmail())) {
+            throw new EntityAlreadyExistException("User with email already exist");
+        } else {
+            User saved = userRepository.save(mapper.toUser(userDto));
+            return mapper.toUserDto(saved);
+        }
+    }
+
+    private boolean checkExistingEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     @Transactional
     @Override
     public UserDto updateUser(Long userId, UserDto patchUSer) {
-        User oldUser = UserMapper.toUser(getUser(userId));
-        User result = patch(oldUser, UserMapper.toUser(patchUSer));
-        UserDto userDto = UserMapper.toUserDto(result);
+        User oldUser = mapper.toUser(getUser(userId));
+        User result = patch(oldUser, mapper.toUser(patchUSer));
+        UserDto userDto = mapper.toUserDto(result);
         if (isValidPatch(userDto)) {
             userRepository.save(result);
             return userDto;
@@ -49,7 +59,7 @@ public class UserServiceImpl implements UserService {
     public UserDto getUser(Long userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent()) {
-            return UserMapper.toUserDto(user.get());
+            return mapper.toUserDto(user.get());
         } else {
             throw new ModelNotFoundException(String.format("User %d not found", userId));
         }
@@ -63,7 +73,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAllUsers() {
-        return UserMapper.toListUserDto(userRepository.findAll());
+        return mapper.toListUserDto(userRepository.findAll());
     }
 
     private boolean isValidPatch(UserDto userDto) {

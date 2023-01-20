@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -23,19 +23,13 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
-    @Autowired
-    public BookingServiceImpl(BookingRepository bookingRepository,
-                              UserRepository userRepository,
-                              ItemRepository itemRepository) {
-        this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
-        this.itemRepository = itemRepository;
-    }
+    private final BookingMapper mapper;
 
     @Transactional
     @Override
@@ -43,10 +37,10 @@ public class BookingServiceImpl implements BookingService {
         Item item = fromOptionalToItem(bookItemRequestDto.getItemId());
         User booker = fromOptionalToUser(userId);
         if (isValid(item, booker)) {
-            Booking booking = BookingMapper.toBooking(bookItemRequestDto, item, booker);
+            Booking booking = mapper.toBooking(bookItemRequestDto, item, booker);
             booking.setStatus(Status.WAITING);
             Booking result = bookingRepository.save(booking);
-            return BookingMapper.toBookingDto(result);
+            return mapper.toBookingDto(result);
         } else {
             throw new ValidationException("Validation exception");
         }
@@ -56,7 +50,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto approveBooking(long bookingId, Boolean approved, long userId) {
         Booking booking = checkForApproving(bookingId, approved, userId);
-        return BookingMapper.toBookingDto(bookingRepository.save(booking));
+        return mapper.toBookingDto(bookingRepository.save(booking));
     }
 
     @Override
@@ -66,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
         } else {
             Booking booking = fromOptionalToBooking(bookingId);
             if (booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
-                return BookingMapper.toBookingDto(booking);
+                return mapper.toBookingDto(booking);
             } else {
                 throw new ModelNotFoundException("Booking not found");
             }
@@ -109,7 +103,7 @@ public class BookingServiceImpl implements BookingService {
             default:
                 throw new UnknownStateException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return BookingMapper.toListBookingDto(bookings);
+        return mapper.toListBookingDto(bookings);
     }
 
     @Override
@@ -147,7 +141,7 @@ public class BookingServiceImpl implements BookingService {
             default:
                 throw new UnknownStateException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return BookingMapper.toListBookingDto(bookings);
+        return mapper.toListBookingDto(bookings);
     }
 
     private Booking checkForApproving(long bookingId, Boolean approved, long userId) {

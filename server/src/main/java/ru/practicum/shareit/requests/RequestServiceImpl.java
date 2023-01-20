@@ -6,9 +6,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ModelNotFoundException;
-import ru.practicum.shareit.requests.dto.ItemRequestDto;
-import ru.practicum.shareit.requests.dto.ItemRequestMapper;
-import ru.practicum.shareit.requests.model.ItemRequest;
+import ru.practicum.shareit.requests.dto.RequestDto;
+import ru.practicum.shareit.requests.dto.RequestMapper;
+import ru.practicum.shareit.requests.model.Request;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -17,47 +17,49 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class ItemRequestServiceImpl implements ItemRequestService {
-    private final ItemRequestRepository itemRequestRepository;
+public class RequestServiceImpl implements RequestService {
+    private final RequestRepository requestRepository;
     private final UserRepository userRepository;
+
+    private final RequestMapper mapper;
 
     @Transactional
     @Override
-    public ItemRequestDto addRequest(ItemRequestDto itemRequestDto, long requestorId) {
+    public RequestDto addRequest(RequestDto requestDto, long requestorId) {
         User requestor = fromOptionalToUser(requestorId);
-        ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestDto, requestor);
-        return ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(itemRequest));
+        Request request = mapper.toRequest(requestDto, requestor);
+        return mapper.toRequestDto(requestRepository.save(request));
     }
 
     @Override
-    public List<ItemRequestDto> getAllRequestsForRequestor(long requestorId) {
+    public List<RequestDto> getAllRequestsForRequestor(long requestorId) {
         User requestor = fromOptionalToUser(requestorId);
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
-        return ItemRequestMapper.toItemRequestDtoList(itemRequestRepository.findAllByRequestor(requestor, sort));
+        return mapper.toRequestDtoList(requestRepository.findAllByRequestor(requestor, sort));
     }
 
     @Override
-    public List<ItemRequestDto> getAllRequests(long requestorId, int from, int size) {
+    public List<RequestDto> getAllRequests(long requestorId, int from, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
         int page = getPageNumber(from, size);
-        return ItemRequestMapper
-                .toItemRequestDtoList(itemRequestRepository
+        return mapper
+                .toRequestDtoList(requestRepository
                         .findAllByRequestorNotLike(requestorId, PageRequest.of(page, size, sort)));
     }
 
     @Override
-    public List<ItemRequestDto> getAllRequests() {
+    public List<RequestDto> getAllRequests() {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
-        return ItemRequestMapper.toItemRequestDtoList(itemRequestRepository.findAll(sort));
+        return mapper.toRequestDtoList(requestRepository.findAll(sort));
     }
 
     @Override
-    public ItemRequestDto getOneRequest(long requestId, long userId) {
+    public RequestDto getOneRequest(long requestId, long userId) {
         if (!userRepository.existsById(userId)) {
             throw new ModelNotFoundException(String.format("User %d not found", userId));
         }
-        ItemRequest itemRequest = fromOptionalToRequest(requestId);
-        return ItemRequestMapper.toItemRequestDto(itemRequest);
+        Request request = fromOptionalToRequest(requestId);
+        return mapper.toRequestDto(request);
     }
 
     private User fromOptionalToUser(long userId) {
@@ -69,8 +71,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return from / size;
     }
 
-    private ItemRequest fromOptionalToRequest(long requestId) {
-        return itemRequestRepository.findById(requestId)
+    private Request fromOptionalToRequest(long requestId) {
+        return requestRepository.findById(requestId)
                 .orElseThrow(() -> new ModelNotFoundException(String.format("Request %d not found", requestId)));
     }
 }
