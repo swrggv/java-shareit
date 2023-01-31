@@ -37,12 +37,4 @@ public class Booking {
     private User booker;
     @Enumerated(EnumType.ORDINAL)
     private Status status;
-
-    public Booking(LocalDateTime start, LocalDateTime end, Item item, User booker, Status status) {
-        this.start = start;
-        this.end = end;
-        this.item = item;
-        this.booker = booker;
-        this.status = status;
-    }
 }
