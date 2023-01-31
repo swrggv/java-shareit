@@ -68,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getBookingByUserSorted(long bookerId, State state, int from, int size) {
+    public List<BookingDto>  getBookingByUserSorted(long bookerId, State state, int from, int size) {
         if (!userRepository.existsById(bookerId)) {
             throw new ModelNotFoundException("User not found");
         }

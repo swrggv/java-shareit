@@ -42,15 +42,8 @@ public class RequestServiceImpl implements RequestService {
     public List<RequestDto> getAllRequests(long requestorId, int from, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
         int page = getPageNumber(from, size);
-        return mapper
-                .toRequestDtoList(requestRepository
-                        .findAllByRequestorNotLike(requestorId, PageRequest.of(page, size, sort)));
-    }
-
-    @Override
-    public List<RequestDto> getAllRequests() {
-        Sort sort = Sort.by(Sort.Direction.DESC, "created");
-        return mapper.toRequestDtoList(requestRepository.findAll(sort));
+        return mapper.toRequestDtoList(requestRepository
+                .findAllByRequestorNotLike(requestorId, PageRequest.of(page, size, sort)));
     }
 
     @Override
