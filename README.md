@@ -1,8 +1,8 @@
 # About project
 This application was created for sharing things.  
-You can create posts about things wich you would like to share. If you couldn't find  
-stuff what you need, you can create a request, meybe someone is able to help you)  
-Of course there is possibility to delete, update item posts.
+You can create posts about things which you would like to share. If you don't see the stuff you need,   
+consider creating a request, because maybe someone else will be able to help you    
+Naturally, item posts can be deleted or updated, should you need it.  
 
 # Tools
 - Java 11, 
@@ -13,9 +13,9 @@ Of course there is possibility to delete, update item posts.
 - Maven
 
 # For starting project
-You have to connect darabase  
+You have to connect database  
 *git clone*  
 *docker compose up*  
 
 # Status
-Project is complited 
+Project is completed
