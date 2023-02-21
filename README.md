@@ -1,4 +1,4 @@
-# About project
+# Shareit
 This application was created for sharing things.  
 You can create posts about things which you would like to share. If you don't see the stuff you need,   
 consider creating a request, because maybe someone else will be able to help you    
